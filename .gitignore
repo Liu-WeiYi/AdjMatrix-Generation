@@ -89,3 +89,15 @@ ENV/
 .ropeproject
 
 *.json
+
+*.home
+
+*.degree
+
+*.graph
+
+*.pdf
+
+*.png
+
+*.pos
