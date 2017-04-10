@@ -19,9 +19,8 @@ import numpy as np
 # save_topology()
 # @purpose: 从一个Tensor中抽取一个adj进行可视化~
 # ------------------------------
-def save_topology(adj, sample_folder, dataset_name, graph_name):
+def save_topology(adj, path, graph_name, link_possibility):
     graph = nx.Graph()
-    path = sample_folder+'/'+dataset_name
 
     if not os.path.isdir(path):
         os.makedirs(path)
@@ -31,14 +30,16 @@ def save_topology(adj, sample_folder, dataset_name, graph_name):
     for src in range(len(adj_list)):
         graph.add_node(src)
         for dst in range(len(adj_list[src])):
-            if adj_list[src][dst] >= 0.2: # 防止 sample 出现 不在 [0,1]的情况
+            if adj_list[src][dst] >= link_possibility: # 防止 sample 出现 不在 [0,1]的情况
                 graph.add_edge(src,dst)
 
     # 2. read position
-    pos_file = glob.glob(path+'/*.pos')
+    pos_file = glob.glob(path+'*.pos')
     if pos_file == []:
-        pos = nx.spring_layout(graph)
-        pickle.dump(pos, open(path+'/graph.pos','wb'))
+        node_size = len(graph.nodes())
+        tmp_graph = nx.barabasi_albert_graph(node_size,2)
+        pos = nx.spring_layout(tmp_graph)
+        pickle.dump(pos, open(path+'graph.pos','wb'))
     else:
         pos = pickle.load(open(pos_file[0],'rb'))
 
@@ -50,9 +51,10 @@ def save_topology(adj, sample_folder, dataset_name, graph_name):
     plt.savefig(path+'/'+graph_name+'.png')
     plt.savefig(path+'/'+graph_name+'.pdf')
     # plt.show()
+    plt.clf()
 
     # 4. store graph
-    pickle.dump(graph, open(path+'/'+graph_name+'.graph','wb'))
+    pickle.dump(graph, open(path+graph_name+'.graph','wb'))
 
 # ------------------------------
 # show_all_variables()

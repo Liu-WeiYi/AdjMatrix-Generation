@@ -27,13 +27,14 @@ def parse_args():
     parser.add_argument("--epoch",                  type=int,   default=25,         help="training steps [25]")
     parser.add_argument("--learning_rate",          type=int,   default=0.0002,     help="Learning rate for adam [0.0002]")
     parser.add_argument("--Momentum_term_adam",     type=float, default=0.5,        help="Momentum term of adam [0.5]")
-    parser.add_argument("--batch_size",             type=int,   default=10,         help="The size of batch [50]")
+    parser.add_argument("--batch_size",             type=int,   default=20,         help="The size of batch [20]")
     parser.add_argument("--generator_Filter",       type=int,   default=50,         help="generator filter size [50]")
     parser.add_argument("--discriminator_Filter",   type=int,   default=50,         help="discriminator filter size [50]")
     parser.add_argument("--generator_FC_length",    type=int,   default=1024,       help="generator fully connected layer length [1024]")
     parser.add_argument("--discriminator_FC_length",type=int,   default=1024,       help="discriminator fully connected layer length [1024]")
 
     # input/output Adj-Matrix
+    parser.add_argument("--trainable_data_size",    type=int,   default=20000,     help="Training Data Total Number [20000]")
     parser.add_argument("--inputMat_Height",        type=int,   default=28,        help="input Adj-Matrix Height [100]")
     parser.add_argument("--inputMat_Width",         type=int,   default=28,        help="input Adj-Matrix Width [100]")
     parser.add_argument("--outputMat_Height",       type=int,   default=28,        help="output Adj-Matrix Height [100]")
@@ -46,9 +47,12 @@ def parse_args():
     parser.add_argument("--InitGen_Length",         type=int,   default=28,        help="output degree vector length [100]")
 
     # tersorboard requirement
-    parser.add_argument("--input_partition_dir",    type=str,   default="WS_test/",       help="Directory Name to Input Partition Graphs")
-    parser.add_argument("--checkpoint_dir",         type=str,   default="./checkpoint",   help="Directory Name to save checkpoints [./checkpoint]")
-    parser.add_argument("--samples_dir",            type=str,   default="./samples",      help="Directory Name to save Samples Topology [./samples]")
+    parser.add_argument("--input_partition_dir",    type=str,   default="WS_test",      help="Directory Name to Input Partition Graphs")
+    parser.add_argument("--checkpoint_dir",         type=str,   default="checkpoint",   help="Directory Name to save checkpoints [./checkpoint]")
+    parser.add_argument("--samples_dir",            type=str,   default="samples",      help="Directory Name to save Samples Topology [./samples]")
+
+    # adj-mat constuction possibility
+    parser.add_argument("--link_possibility",       type=float, default=0.5,              help="if a value in sampled adj-mat is greater than link-possibility-threshold, then there is an edge between two nodes on positions [0.5]")
 
     return parser.parse_args()
 
@@ -75,6 +79,7 @@ def main(args):
                 discriminatorFilter=args.discriminator_Filter,
                 generatorFC=args.generator_FC_length,
                 discriminatorFC=args.discriminator_FC_length,
+                trainable_data_size=args.trainable_data_size,
                 inputMat_H=args.inputMat_Height,
                 inputMat_W=args.inputMat_Width,
                 outputMat_H=args.outputMat_Height,
@@ -83,7 +88,8 @@ def main(args):
                 InitGen_Length=args.InitGen_Length,
                 inputPartitionDIR=args.input_partition_dir,
                 checkpointDIR=args.checkpoint_dir,
-                sampleDIR=args.samples_dir
+                sampleDIR=args.samples_dir,
+                link_possibility=args.link_possibility
             )
 
             show_all_variables() # TF中的所有变量

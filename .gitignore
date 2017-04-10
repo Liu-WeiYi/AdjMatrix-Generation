@@ -101,3 +101,8 @@ ENV/
 *.png
 
 *.pos
+
+*.index
+
+# ignore checkpoint &
+checkpoint/
