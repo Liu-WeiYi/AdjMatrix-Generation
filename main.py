@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument("--Dataset",                type=str,   default="WS_test",  help="Datasets Choose")
 
     # Model Hyper-parameters
-    parser.add_argument("--epoch",                  type=int,   default=25,         help="training steps [25]")
+    parser.add_argument("--epoch",                  type=int,   default=20,         help="training steps [20]")
     parser.add_argument("--learning_rate",          type=int,   default=0.0002,     help="Learning rate for adam [0.0002]")
     parser.add_argument("--Momentum_term_adam",     type=float, default=0.5,        help="Momentum term of adam [0.5]")
     parser.add_argument("--batch_size",             type=int,   default=20,         help="The size of batch [20]")
@@ -35,16 +35,16 @@ def parse_args():
 
     # input/output Adj-Matrix
     parser.add_argument("--trainable_data_size",    type=int,   default=20000,     help="Training Data Total Number [20000]")
-    parser.add_argument("--inputMat_Height",        type=int,   default=28,        help="input Adj-Matrix Height [100]")
-    parser.add_argument("--inputMat_Width",         type=int,   default=28,        help="input Adj-Matrix Width [100]")
-    parser.add_argument("--outputMat_Height",       type=int,   default=28,        help="output Adj-Matrix Height [100]")
-    parser.add_argument("--outputMat_Width",        type=int,   default=28,        help="output Adj-Matrix Width [100]")
+    parser.add_argument("--inputMat_Height",        type=int,   default=28,        help="input Adj-Matrix Height [28]")
+    parser.add_argument("--inputMat_Width",         type=int,   default=28,        help="input Adj-Matrix Width [28]")
+    parser.add_argument("--outputMat_Height",       type=int,   default=28,        help="output Adj-Matrix Height [28]")
+    parser.add_argument("--outputMat_Width",        type=int,   default=28,        help="output Adj-Matrix Width [28]")
 
     # Out-Degree Vector
-    parser.add_argument("--OutDegree_Length",       type=int,   default=28,        help="input degree vector length [100]")
+    parser.add_argument("--OutDegree_Length",       type=int,   default=28,        help="input degree vector length [28]")
 
     # Init Generator Sample Vector
-    parser.add_argument("--InitGen_Length",         type=int,   default=28,        help="output degree vector length [100]")
+    parser.add_argument("--InitGen_Length",         type=int,   default=28,        help="output degree vector length [28]")
 
     # tersorboard requirement
     parser.add_argument("--input_partition_dir",    type=str,   default="WS_test",      help="Directory Name to Input Partition Graphs")

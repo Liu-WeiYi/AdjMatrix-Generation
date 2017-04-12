@@ -1,9 +1,14 @@
 更新信息
 
+# 2017.04.11
+Fix Bugs:
+--- 将__load_Adj 函数中的冗余操作去掉，全部换成直接对np的操作。（之前是先生成tf,再在返回的时候采用.eval转换成np）
+
+
 # 2017.04.10
 1. 增加参数
- --link_possibility 0.5 : 用于指示当前在构建邻接矩阵的时候，如果该邻接矩阵相应位置的值>0.5，则表明这两个节点之间有边相连
- --trainable_data_size 20000 : 用于指定训练数据的个数
+    --link_possibility 0.5 : 用于指示当前在构建邻接矩阵的时候，如果该邻接矩阵相应位置的值>0.5，则表明这两个节点之间有边相连
+    --trainable_data_size 20000 : 用于指定训练数据的个数
 2. Fix Bugs:
 --- 引入 math.ceil() 对 Generator / Discriminator 中卷积之后的 adj-mat 大小统一进行向上取整，保证结果一致性
 --- 保存 graph 的 pos 文件时 不采用 GEN生成的 graph, 因为最开始 Gen 生成的 graph 一定没有规律

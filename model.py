@@ -15,7 +15,7 @@ import math
 
 from utils import *
 
-debugFlag = True
+debugFlag = False
 
 class adj_Matrix_Generator(object):
     """
@@ -488,7 +488,7 @@ class adj_Matrix_Generator(object):
         if debugFlag is True:
             print('current adj file dir: ', adj_file, end='\t')
         degree_file = glob.glob(path+'*.degree')[0]
-        
+
         # 读入adj
         adj = pickle.load(open(adj_file,'rb'))
         degree = pickle.load(open(degree_file,'rb'))
@@ -502,20 +502,28 @@ class adj_Matrix_Generator(object):
             #     if i+1 % 5000 == 0:
             #         print('transfer %d Tensors'%i)
             if i == startPoint:
-                Tensor = tf.stack([adj[i]],axis=0)
-                DegreeTensor = tf.stack([degree[i]],axis=0)
+                #Tensor = tf.stack([adj[i]],axis=0)
+                Tensor = np.stack([adj[i]],axis=0)
+                #DegreeTensor = tf.stack([degree[i]],axis=0)
+                DegreeTensor = np.stack([degree[i]],axis=0)
             else:
-                slice = tf.stack([adj[i]],axis=0)
-                slice_degree = tf.stack([degree[i]],axis=0)
-                Tensor = tf.concat([Tensor, slice],axis=0)
-                DegreeTensor = tf.concat([DegreeTensor, slice_degree],axis=0)
+                #slice = tf.stack([adj[i]],axis=0)
+                slice = np.stack([adj[i]],axis=0)
+                #slice_degree = tf.stack([degree[i]],axis=0)
+                slice_degree = np.stack([degree[i]],axis=0)
+                #Tensor = tf.concat([Tensor, slice],axis=0)
+                Tensor = np.concatenate([Tensor, slice],axis=0)
+                #DegreeTensor = tf.concat([DegreeTensor, slice_degree],axis=0)
+                DegreeTensor = np.concatenate([DegreeTensor, slice_degree],axis=0)
 
-        AdjMatTensor = tf.expand_dims(input=Tensor, axis=-1)
+        #AdjMatTensor = tf.expand_dims(input=Tensor, axis=-1)
+        AdjMatTensor = np.expand_dims(Tensor, axis=-1)
         if debugFlag is True:
             print('Output -> AdjMat Tensor shape: ', AdjMatTensor.shape, end='\t')
             print('Output -> Degree Tensor shape: ', DegreeTensor.shape)
 
-        return AdjMatTensor.eval(),DegreeTensor.eval()
+        #return AdjMatTensor.eval(),DegreeTensor.eval()
+        return AdjMatTensor,DegreeTensor
     # ================================================
     # FROM DCGAN
     @property
