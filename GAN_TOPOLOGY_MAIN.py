@@ -2,7 +2,7 @@
 #coding:utf-8
 """
   Author:   weiyiliu --<weiyiliu@us.ibm.com>
-  Purpose:  主程序入口
+  Purpose:  GAN-Topology 生成器 主程序入口
             采用DCGAN思想 生成拓扑网络
   Created: 04/08/17
 """

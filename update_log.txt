@@ -1,5 +1,10 @@
 更新信息
 
+# 2017.04.12
+1. 将原main函数改成 GAN_TOPOLOGY_MAIN.py
+2. 新增Topology分析函数，现在可以对一个大网络进行分解~ TOPOLOGY_MAIN.py
+
+
 # 2017.04.11
 1. 编译metis工具~ 并将编译好的图分割工具放在这里以备后面进行图划分操作
 2. Fix Bugs:

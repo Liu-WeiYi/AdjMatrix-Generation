@@ -19,7 +19,6 @@ for i in range(graph_num):
     g = nx.barabasi_albert_graph(node_size,2)
     # current_file = open(str(i)+'.adj','w+')
     src_dict = {}
-    src_list = []
     # create adj file
     for src in g.nodes():
         src_dict[src] = []
