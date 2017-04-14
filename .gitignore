@@ -111,3 +111,6 @@ checkpoint/
 *.metis_graph
 *.part.*
 *.outNeighbor
+
+*.com
+board/

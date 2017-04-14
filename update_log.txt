@@ -1,5 +1,13 @@
 更新信息
 
+# 2017.04.13 --- Major Improvement!!
+增加 Hierarchy Model 方法
+1. 增加
+ --- GAN_TOPOLOGY_MAIN.py 增加SaveModel的方法~~ 以保证训练完成之后将模型保存到本地
+ --- 增加 external_tools 文件夹，存放一些外部工具
+ --- 创建 Hierarchy_Topology_MAIN.py 用于根据Louvain的层次化社团划分结果产生相应的训练数据
+
+
 # 2017.04.12
 1. 将原main函数改成 GAN_TOPOLOGY_MAIN.py
 2. 新增Topology分析函数，现在可以对一个大网络进行分解~ TOPOLOGY_MAIN.py
@@ -12,7 +20,7 @@
 
 
 # 2017.04.10
-1. 增加参数
+1. 增加
     --link_possibility 0.5 : 用于指示当前在构建邻接矩阵的时候，如果该邻接矩阵相应位置的值>0.5，则表明这两个节点之间有边相连
     --trainable_data_size 20000 : 用于指定训练数据的个数
 2. Fix Bugs:

@@ -306,6 +306,17 @@ class adj_Matrix_Generator(object):
                     # checkpointDIR = self.checkpointDIR
                     self.save(self.checkpointDIR,counter)
 
+    def saveModel(self):
+        """
+        存储训练好的模型
+        """
+        save_path = os.path.join('trained_Model', "%s_%d_%d_%.1f"%(self.dataset_name, self.inputMat_H,self.trainable_data_size, self.link_possibility),'')
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        saver = tf.train.Saver()
+        saver.save(self.sess, save_path)
+        return save_path
+
     def __generator(self, InitInputSampleVector, Input_OutDegreeVector, trainFlag=True):
         """
         @porpose 实现 生成器
