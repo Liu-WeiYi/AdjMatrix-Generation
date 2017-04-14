@@ -2,8 +2,8 @@
 #coding:utf-8
 """
   Author:   weiyiliu --<weiyiliu@us.ibm.com>
-  Purpose:  model (based on DCGAN)
-  Created: 04/08/17
+  Purpose:  Condition model (based on DCGAN)
+  Created:  04/08/17
 """
 import numpy as np
 import tensorflow as tf
@@ -17,7 +17,7 @@ from utils import *
 
 debugFlag = False
 
-class adj_Matrix_Generator(object):
+class Condition_adjMatrix_Generator(object):
     """
     @purpose: 随便给定一个网络，生成具有对应特性的网络
     """

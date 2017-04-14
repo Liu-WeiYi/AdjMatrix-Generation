@@ -6,6 +6,8 @@
  --- GAN_TOPOLOGY_MAIN.py 增加SaveModel的方法~~ 以保证训练完成之后将模型保存到本地
  --- 增加 external_tools 文件夹，存放一些外部工具
  --- 创建 Hierarchy_Topology_MAIN.py 用于根据Louvain的层次化社团划分结果产生相应的训练数据
+ --- 将 原程序变成 Condition 部分 和 Hierarchy 部分
+ --- 新增加 Hierarchy_model 用作带权重的GAN /Hierarchy_GAN_Topology 用作该带权重的GAN的主函数
 
 
 # 2017.04.12

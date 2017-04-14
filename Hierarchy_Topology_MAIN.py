@@ -23,6 +23,7 @@ import os
 import sys
 import glob
 import math
+import pickle
 
 import Conditional_Topology_MAIN as CTM
 from external_tools.community_louvain import generate_dendrogram
@@ -53,7 +54,7 @@ if __name__ == "__main__":
     if debugFlag is True:
         print('used time: %.4f\tnet-%s layers infor\t'%(time.time()-start, filename), len(layer_size), layer_size)
 
-    partition_info = {}
+    partition_info = []
     for nparts in layer_size:
         """inherit from Conditional_Topology_MAIN.py"""
         """layer的作用是指导图分割每层分割出的社团个数, 而非 每张子图大小, 所以在这里反而应该给出每张子图的大小"""
@@ -68,12 +69,13 @@ if __name__ == "__main__":
 
         # step.2
         current_max_size = CTM.generate_AdjMat(path, graph, MatSize, classNum=1)
-        partition_info[nparts] = current_max_size
+        partition_info.append([nparts,current_max_size])
 
         # os.system('python3 Conditional_Topology_MAIN.py %s %d 1'%(filename, npart))
         # 不需要 .metis_graph 和 .outdegree 文件 故删除以节省空间~
         os.system('rm %s*.metis_graph'%path)
         os.system('rm %s*.outNeighbor'%path)
 
+    pickle.dump(partition_info, open('%s_partition_info.pickle'%filename,'wb'))
     if debugFlag is True:
-        print('partion info--{nparts:inputMatSize}\n\t\t', partition_info)
+        print('partion info--[trainable_data_size, inputMatSize]\n\t\t', partition_info)
