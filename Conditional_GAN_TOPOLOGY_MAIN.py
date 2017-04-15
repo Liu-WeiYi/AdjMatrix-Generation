@@ -50,6 +50,7 @@ def parse_args():
     parser.add_argument("--input_partition_dir",    type=str,   default="facebook",      help="Directory Name to Input Partition Graphs")
     parser.add_argument("--checkpoint_dir",         type=str,   default="checkpoint",   help="Directory Name to save checkpoints [./checkpoint]")
     parser.add_argument("--samples_dir",            type=str,   default="samples",      help="Directory Name to save Samples Topology [./samples]")
+    parser.add_argument("--reconstruction_dir",     type=str,   default="reconstruction",   help="Directory Name to save reconstructed Topology [reconstruction]")
 
     # adj-mat constuction possibility
     parser.add_argument("--link_possibility",       type=float, default=0.5,              help="if a value in sampled adj-mat is greater than link-possibility-threshold, then there is an edge between two nodes on positions [0.5]")
@@ -89,6 +90,7 @@ def main(args):
                 inputPartitionDIR=args.input_partition_dir,
                 checkpointDIR=args.checkpoint_dir,
                 sampleDIR=args.samples_dir,
+                reconstructDIR=args.reconstruction_dir,
                 link_possibility=args.link_possibility
             )
 

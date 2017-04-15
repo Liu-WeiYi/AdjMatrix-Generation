@@ -68,6 +68,7 @@ if __name__ == "__main__":
         CTM.metis_graph(metis_path, nparts)
 
         # step.2
+        ## 由于不需要事先指定类别，所以这里类别 classNum 直接等于1
         current_max_size = CTM.generate_AdjMat(path, graph, MatSize, classNum=1)
         partition_info.append([nparts,current_max_size])
 

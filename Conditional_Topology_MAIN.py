@@ -123,11 +123,11 @@ def generate_AdjMat(path, graph, MatSize, classNum):
     max_size = max(set([len(node_part[part]) for part in node_part.keys()]))
     if debugFlag is True:
         print('max part size: ', max_size)
-    ## 生成 邻接矩阵-adj, 对应的-outDegree, map
+    ## 生成 每一个点对应的邻接矩阵中的坐标-part2Node, 邻接矩阵-adj, 对应的-outDegree, map
+    part2Node = {}        # 每一个小块对应的序号(从这个序号可以索引adj,adj_outNeighbor,outDegree相应位置)
     adj = {}              # 每一个小块的邻接矩阵
     adj_outNeighbor = {}  # 每一个小块连接外部的节点的记录
     outDegree = {}        # 每一个小块的类别
-    node2Part = {}        # 每一个小块对应的序号(从这个序号可以索引adj,adj_outNeighbor,outDegree相应位置)
 
     count = 0
     for p in node_part.keys():
@@ -135,15 +135,18 @@ def generate_AdjMat(path, graph, MatSize, classNum):
         """ extract subgraph :) """
         current_subgraph = graph.subgraph(current_part)
     ### ------------------------------------------------------------
-    ### 1. 根据 max_size 生成 Adj-Mat, 使得生成的Adj-Mat都是一样大小的
-        current_subgraph_adj = graph2Adj(current_subgraph,max_size)
-        adj[count] = current_subgraph_adj
+    ### 1. 根据 max_size 生成 part2Node & Adj-Mat, 同时应该保证 生成的Adj-Mat都是一样大小的
+        current_part2Node, current_subgraph_adj = graph2Adj(current_subgraph,max_size)
+
+        part2Node[count]    = current_part2Node
+        adj[count]          = current_subgraph_adj
     ### ------------------------------------------------------------
     ### 2. 记录adj_outNeighbor --- 采用sum进行
         outNeighbors = {}
         for node in current_part:
             neighbors = nx.neighbors(graph, node)
             outNeighbors[node] = list(set(neighbors)-set(current_part))
+
         adj_outNeighbor[count] = outNeighbors
         ### ------------------------------------------------------------
         count += 1
@@ -157,7 +160,7 @@ def generate_AdjMat(path, graph, MatSize, classNum):
         step = np.inf
     if debugFlag is True:
         check = set()
-    for part in adj_outNeighbor.keys():
+    for part in adj_outNeighbor.keys(): # 保证此时每一个part 就是上面的 count 信息不变
         outDegreeVector = np.zeros(shape=[classNum])
         current_part_length = sum([len(adj_outNeighbor[part][node]) for node in adj_outNeighbor[part].keys()])
         group = math.floor(current_part_length/step)
@@ -171,17 +174,12 @@ def generate_AdjMat(path, graph, MatSize, classNum):
     if debugFlag is True:
         original_part = set([i for i in range(classNum)])
         print('missing group: ', original_part-check)
-    ### ------------------------------------------------------------
-    ### 4. 将每一个小块与其序号进行映射
-    for part in adj_outNeighbor.keys():
-        current_nodes = sorted(adj_outNeighbor[part].keys())
-        node2Part[str(current_nodes)] = part
 
     # 3. 写文件~
-    pickle.dump(adj, open(path+graph.name+'_%d.graph'%MatSize,'wb'))
-    pickle.dump(outDegree, open(path+graph.name+'_%d.degree'%MatSize,'wb'))
-    pickle.dump(adj_outNeighbor, open(path+graph.name+'_%d.outNeighbor'%MatSize,'wb'))
-    pickle.dump(node2Part, open(path+graph.name+'_%d.map'%MatSize,'wb'))
+    pickle.dump(part2Node, open(path+graph.name+'_%d.map'%max_size,'wb'))
+    pickle.dump(adj, open(path+graph.name+'_%d.graph'%max_size,'wb'))
+    pickle.dump(outDegree, open(path+graph.name+'_%d.degree'%max_size,'wb'))
+    pickle.dump(adj_outNeighbor, open(path+graph.name+'_%d.outNeighbor'%max_size,'wb'))
 
     if debugFlag is True:
         print('\n\nTopology Processing Down...')
@@ -195,9 +193,13 @@ def generate_AdjMat(path, graph, MatSize, classNum):
 # ====================================================================================
 def graph2Adj(g, max_size):
     src_dict = {}
+    adjIdx_2_node = {}
+    adjIdx = 0
     # create adj file
     for src in g.nodes():
         src_dict[src] = []
+        adjIdx_2_node[adjIdx] = src
+        adjIdx += 1
         for dst in g.nodes():
             if src == dst:
                 src_dict[src].append(0)
@@ -216,7 +218,7 @@ def graph2Adj(g, max_size):
             print('original adj shape: ', adj.shape, '\tpadded adj shape: ',padded_adj.shape)
             print(adj, '\n', padded_adj)
 
-    return padded_adj
+    return adjIdx_2_node, padded_adj
 
 
 

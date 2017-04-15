@@ -3,7 +3,7 @@
 """
   Author:   weiyiliu --<weiyiliu@us.ibm.com>
   Purpose:  定义一些常用函数
-  Created: 04/08/17
+  Created:  04/08/17
 """
 import tensorflow as tf
 import tensorflow.contrib.slim as slim # 一个tensorflow的小库~~
@@ -13,6 +13,39 @@ import glob
 import pickle
 import matplotlib.pyplot as plt
 import numpy as np
+
+# ------------------------------
+# construct_topology()
+# @purpose: 根据每一小块邻接矩阵each_part，构建出完整的拓扑结构~
+# ------------------------------
+def construct_topology(graph_name, each_part, Node2Part):
+    # 采用 有向 加权 的网络 以期将 生成网络的所有信息完整记录下来
+    weighted_graph = nx.DiGraph(name=graph_name)
+
+    for part in each_part.keys():
+        # 对每一块~
+        adj         = each_part[part]
+        adjID_node  = Node2Part[part]
+
+        # 构建 网络的一部分
+        for src_adjIdx in range(len(list(adj))):
+            if src_adjIdx in adjID_node.keys():
+                src = adjID_node[src_adjIdx]
+                weighted_graph.add_node(src)
+
+                for dst_Idx in range(len(adj[src_adjIdx])):
+                    if adj[src_adjIdx][dst_Idx] > 0 and dst_Idx in adjID_node.keys():
+                        dst = adjID_node[dst_Idx]
+
+                        # 去除自环
+                        if dst != src:
+                            weighted_graph.add_node(dst)
+                            weighted_graph.add_edge(src,dst,weight=adj[src_adjIdx][dst_Idx])
+
+    return weighted_graph
+
+
+
 
 
 # ------------------------------
