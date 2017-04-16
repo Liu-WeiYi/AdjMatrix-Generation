@@ -191,7 +191,8 @@ def generate_AdjMat(path, graph, MatSize, classNum):
 # ====================================================================================
 # utils
 # ====================================================================================
-def graph2Adj(g, max_size):
+def graph2Adj(g, max_size = 1):
+    # 当max_size == -1时，只返回 adj，而不进行padding
     src_dict = {}
     adjIdx_2_node = {}
     adjIdx = 0
@@ -209,16 +210,19 @@ def graph2Adj(g, max_size):
                 else:
                     src_dict[src].append(0)
     adj = np.array([np.array(src_dict[src]) for src in src_dict.keys()])
-    # padding adj file to max_size
-    padded_adj = np.zeros(shape=[max_size,max_size])
-    padded_adj[:adj.shape[0], :adj.shape[1]] = adj
+    if max_size == -1:
+        return adj
+    elif max_size >= 0:
+        # padding adj file to max_size
+        padded_adj = np.zeros(shape=[max_size,max_size])
+        padded_adj[:adj.shape[0], :adj.shape[1]] = adj
 
-    if debugFlag is True:
-        if adj.shape != padded_adj.shape:
-            print('original adj shape: ', adj.shape, '\tpadded adj shape: ',padded_adj.shape)
-            print(adj, '\n', padded_adj)
+        if debugFlag is True:
+            if adj.shape != padded_adj.shape:
+                print('original adj shape: ', adj.shape, '\tpadded adj shape: ',padded_adj.shape)
+                print(adj, '\n', padded_adj)
 
-    return adjIdx_2_node, padded_adj
+        return adjIdx_2_node, padded_adj
 
 
 

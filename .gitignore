@@ -116,3 +116,7 @@ checkpoint/
 board/
 
 trained_Model/
+
+reconstruction/
+
+*.pickle

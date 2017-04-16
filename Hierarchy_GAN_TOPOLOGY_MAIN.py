@@ -20,6 +20,9 @@ from utils import *
 def parse_args():
     parser = argparse.ArgumentParser()
 
+    # For Hierarchy GAN itself
+    parser.add_argument("--training_step",          type=int,   default=500,       help="specify training step for hierarchy gan")
+
     # Current Net Name
     parser.add_argument("--Dataset",                type=str,   default="facebook",  help="Datasets Choose")
 
@@ -61,7 +64,11 @@ def main(args):
 
     with tf.device('cpu:0'): # 强制在CPU上运行 囧~
         with tf.Session(config=tf.ConfigProto(log_device_placement=False)) as sess:
-            # 1. construct Model
+            """首先判断是否存在已经训练好的结果*.nxgraph，如果没有，则需要调用Condition_GAN进行重新训练"""
+            trained_path = os.path.join(args.reconstruction_dir,args.Dataset,"Hierarchy",'')
+            trainedFlag = os.path.exists(trained_path)
+
+            # 1. construct Model for each layer
             adjMatGen = Hierarchy_adjMatrix_Generator(
                 sess=sess,
                 dataset_name=args.Dataset,
@@ -79,17 +86,22 @@ def main(args):
                 checkpointDIR=args.checkpoint_dir,
                 sampleDIR=args.samples_dir,
                 reconstructDIR=args.reconstruction_dir,
-                link_possibility=args.link_possibility
+                link_possibility=args.link_possibility,
+                trainedFlag=trainedFlag
             )
 
-            show_all_variables() # TF中的所有变量
+            # 2. using weight for each layer, and construct Hierarchy Model
+            adjMatGen.modelConstruction()
 
-            # # 2. train Model
-            # adjMatGen.train()
+            # 3. train Hierarchy Model to get weight and constructed adj
+            weight_list, reconstructed_Adj = adjMatGen.train(training_step=args.training_step)
+            print("=======================\nreconstuction DOWN!\n=======================")
+            if debugFlag is True:
+                print('weight list: ', weight_list)
+                print('reconstructed_adj shape: ', reconstructed_Adj.shape)
 
-            # # 3. save Model
-            # save_path = adjMatGen.saveModel()
-            # print('Trained Model Path: ', save_path)
+            # 4. save Model
+            pickle.dump(reconstructed_Adj, open(trained_path+"reconstructed_%s.adj"%args.Dataset,'wb'))
 
 if __name__ == '__main__':
     main(parse_args())

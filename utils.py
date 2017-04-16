@@ -45,9 +45,6 @@ def construct_topology(graph_name, each_part, Node2Part):
     return weighted_graph
 
 
-
-
-
 # ------------------------------
 # save_topology()
 # @purpose: 从一个Tensor中抽取一个adj进行可视化~

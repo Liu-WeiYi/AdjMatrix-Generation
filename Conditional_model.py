@@ -111,7 +111,7 @@ class Condition_adjMatrix_Generator(object):
         ## 用作存储 真实数据
         self.OutDegreeVector = tf.placeholder(tf.float32, shape=[self.batch_size, self.OutDegreeLength], name="Out_Degree_Vector_%d"%self.inputMat_H)
         self.inputMat = tf.placeholder(tf.float32, shape=[self.batch_size, self.inputMat_H, self.inputMat_W, 1], name="Real_Input_Adj_Matrix_%d"%self.inputMat_H)
-        
+
         ## 用作存储 随机采样的属于，用于Generator生成器的输入
         self.InitSampleVector = tf.placeholder(tf.float32, shape=[None, self.InitSampleLength], name="GEN_Input_%d"%self.inputMat_H)
 
@@ -120,7 +120,7 @@ class Condition_adjMatrix_Generator(object):
 
         # 3. Sampler --- 用作 生成图片的时候~~
         self.Sampler = self.__generator(InitInputSampleVector=self.InitSampleVector, Input_OutDegreeVector = self.OutDegreeVector, trainFlag=False)
-        
+
         # 4. Reconstruction --- 用于 重建网络时
         self.re_Mat = tf.placeholder(tf.float32, shape=[1, self.inputMat_H, self.inputMat_W, 1], name="Reconstruct_Input_Adj_Matrix_%d"%self.inputMat_H)
         self.re_OutDegreeVector = tf.placeholder(tf.float32, shape=[1, self.OutDegreeLength], name="Reconstruct_Out_Degree_Vector_%d"%self.inputMat_H)
@@ -364,7 +364,7 @@ class Condition_adjMatrix_Generator(object):
                                                 self.re_Mat : partition_mat,
                                                 self.re_OutDegreeVector : partition_labels
                                             })
-            
+
             each_part[i] = np.squeeze(reconstruct_adj[0])
 
         # step.1  采用 重构出的reconstruct_adj 以及 每一块的映射文件 <filename>_MatSize.map (part2Node) 拼接所有块
@@ -528,8 +528,8 @@ class Condition_adjMatrix_Generator(object):
             # 3. 经过第二个Hidden_Layer: h0+outDegreeVector -> condition(OutDegreeVector) & conv2d -> batch_norm_1 -> leaky_relu -> linear := h1
             h1 = lrelu(self.discriminator_batch_norm1(
                 conv2d(input_=h0, output_filter = self.discriminatorFilter + self.OutDegreeLength, name="d_h1_conv1_%d"%self.inputMat_H)
-            )
-                       )
+                                            )
+                        )
             if debugFlag is True:
                 print('CONDITION h1 shape: ', h1.shape) # (20, 7,7, 50+28)
             ## 扝平化, 以适用于后面的全连接
@@ -559,7 +559,7 @@ class Condition_adjMatrix_Generator(object):
                 print('h3 to sigmoid: ', h3_sigmoid.shape) # (20, 1)
 
             return h3_sigmoid, h3
-    
+
     def __re_Construction(self, InitInputSampleVector, Input_OutDegreeVector, trainFlag=False):
         """
         @porpose 实现 生成器
@@ -659,7 +659,7 @@ class Condition_adjMatrix_Generator(object):
             if debugFlag is True:
                 print('final layer h3 shape: ', h3.shape) # (20, 28, 28, 1)
 
-            return h3    
+            return h3
 
     def __load_AdjMatInfo(self, AdjMat_OutDegree_Dir, startPoint=0, endPoint=50, MatSize=-1):
         if MatSize == -1:

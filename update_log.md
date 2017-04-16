@@ -1,8 +1,16 @@
-# 更新信息 --- 大王叫我来巡山~~
+# 大王叫我来巡山的开发日记~~
+
+## 2017.04.15
+### 1. 增加
+    --- ⭐️️️️ ️️⭐️ ⭐️ 搭建Hierarchy GAN的学习平台，目标是使得重构回去的矩阵与原始矩阵之间的L1-norm最小
+                --1. 重构矩阵 re_adj = w1*adj1+w2*adj2+w3*adj3+... [w1 - 第layer层的权重 | adj1 - 第layer层重构出的adj;]
+                --2. 优化方式 learning_rate_decay / AdamOptimizer
+
 ## 2017.04.14
 ### 1. 增加
     --- 改 update_log.txt 为 md文件~
     --- ⭐️️️️ ️️⭐️ ⭐️ 在 Condition_model.py 中 增加 reconstructMat() 方法， 用以重建邻接矩阵
+    --- 在Condition_model.py中增加reconstruction部分。具体体现在模型建立时新增 reconstruction()函数，以及新建三个tf变量用于存放重建时需要给定的generator的输入，从磁盘上读入的OutDegree以及对应的inputMat. 重建出的所有邻接矩阵采用DiGraph的形式存放在 reconstruction/<filename>/Hierarchy/*.nxgraph 中
 ### 2. Fix Bugs:
     --- Contiditional_model.py 将TF中的变量存储改成变量名+inputMatSize, 使得再利用TF的时候不会出现 变量冲突问题~
     --- 更名 *_Topology_MAIN.py 中的 node2Part字典为 Part2node, 为与之前的adj, adj_outneighbor, outDegree字典对应, node2Part格式:

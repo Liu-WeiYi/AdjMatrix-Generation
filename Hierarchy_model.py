@@ -15,6 +15,7 @@ import math
 
 from utils import *
 import Conditional_model as C_model
+from Conditional_Topology_MAIN import graph2Adj, generate_graph
 
 debugFlag = True
 
@@ -31,7 +32,8 @@ class Hierarchy_adjMatrix_Generator(object):
                 training_info_dir="facebook_partition_info.pickle",
                 OutDegree_Length=1,
                 inputPartitionDIR="facebook", checkpointDIR="condition_checkpoint", sampleDIR="condition_samples",reconstructDIR="reconstruction",
-                link_possibility=0.5
+                link_possibility=0.5,
+                trainedFlag=False
             ):
         """
         @purpose
@@ -54,6 +56,7 @@ class Hierarchy_adjMatrix_Generator(object):
             sampleDIR:          采样得到的网络 输出地址 [condition_samples]
             reconstructDIR:     重构网络的存放地址
             link_possibility:   重构网络时指定的 连接权重
+            trainedFlag:        是否需要对每一层进行训练. 当为FALSE表示需要训练，TRUE表示不需要训练 [False]
         """
         # GAN 参数初始化
         self.sess                = sess
@@ -85,11 +88,12 @@ class Hierarchy_adjMatrix_Generator(object):
         self.link_possibility    = link_possibility
 
         # 构建 GAN~
-        self.modelConstrunction()
+        if trainedFlag is False:
+            self.per_layer_modelConstrunction()
+            show_all_variables() # TF中的所有变量
+            print('Trained Layers Process DOWN...')
 
-        print('so far so good as;dfas;ofhasd;ifhas;oifaw;ofwqpofpwoif[qwfwqopfeqwofb')
-
-    def modelConstrunction(self):
+    def per_layer_modelConstrunction(self):
         print('\n============================================================================')
         print('Model Construction ...')
         print('============================================================================')
@@ -122,6 +126,107 @@ class Hierarchy_adjMatrix_Generator(object):
                 )
                 model.train()
                 model.saveModel()
-                re_Net = model.reconstructMat()
+                re_Net = model.reconstructMat(type="Hierarchy")
 
                 self.reconstructNet_per_layer.append(re_Net)
+
+    def modelConstruction(self):
+        # step.0 生成Hierarchy GAN 的Adj 以及 原始数据的 GAN
+        if not os.path.exists('%s_adjs.pickle'%self.dataset_name):
+            # 1. 读取trained 后的每一层的数据, 并生成 保存于trained_graph_list中
+            trained_layer_path = os.path.join(self.reconstructDIR,self.dataset_name,"Hierarchy",'')
+            trained_graph_adj_list = []
+            paths = glob.glob(trained_layer_path+"%s_*.nxgraph"%self.dataset_name)
+            if debugFlag is True:
+                print('all trained layer paths: ', paths)
+            for path in paths:
+                graph = pickle.load(open(path,'rb'))
+                if debugFlag is True:
+                    print('trained graph size: ',len(graph.nodes()))
+                adj = graph2Adj(graph, max_size = -1)
+                if debugFlag is True:
+                    print('current adj shape: ', adj.shape)
+                trained_graph_adj_list.append(adj)
+
+            # 2. 读取原始网络，并生成对应的adj
+            original_graph_path = os.path.join("data", self.dataset_name, '')
+            origin_graph = generate_graph(original_graph_path,self.dataset_name,-1)
+            if debugFlag is True:
+                print('original graph size: ',len(origin_graph.nodes()))
+            origin_adj = graph2Adj(origin_graph,max_size=-1)
+            if debugFlag is True:
+                print('original adj shape: ', origin_adj.shape)
+
+            pickle.dump([trained_graph_adj_list,origin_adj],open('%s_adjs.pickle'%self.dataset_name,'wb'))
+        else:
+            [trained_graph_adj_list,origin_adj] = pickle.load(open('%s_adjs.pickle'%self.dataset_name,'rb'))
+            if debugFlag is True:
+                for i in trained_graph_adj_list:
+                    print('trained graph ajd shape :', i.shape)
+                print('original adj shape: ', origin_adj.shape)
+
+        # step.1 创建Weight~
+        self.trained_graph_weight_list = []
+        self.layer_weight_list = [] # for 方法 2 😀
+        count = 0
+        for adj in trained_graph_adj_list:
+            """每一个邻接矩阵 生成不一样的权重"""
+            layer_weight = tf.Variable(tf.random_uniform([1],minval=-1,maxval=1),name="weight_%d"%count)
+            self.layer_weight_list.append(layer_weight)
+            adj_layer_weight = layer_weight*tf.ones(shape=adj.shape) # 扩展到每一个维度上~
+            self.trained_graph_weight_list.append(adj_layer_weight)
+
+            count += 1
+
+        # step.2 logit
+        tmp = [self.trained_graph_weight_list[idx]*trained_graph_adj_list[idx] for idx in range(len(self.trained_graph_weight_list))]
+        self.logits = tf.add_n(tmp,name="Layered_results")
+        # self.logits = tf.nn.sigmoid(tf.add_n(tmp,name="Layered_results")) --- 添加sigmoid作为规整之后，居然初始Loss非常高(0.5左右)，而且严重降低作战(Loss 衰减)效率。。。😳
+
+        # step.3 loss
+        origin_adj = tf.to_float(origin_adj)
+        # self.loss = tf.reduce_mean(tf.square(origin_adj-self.logits)) # L2-norm
+        self.loss = tf.reduce_mean(tf.abs(origin_adj-self.logits))      # L1-norm
+
+        """learning rate decay... from TF_API"""
+        start_learning_rate = 0.1
+        global_step = tf.Variable(0, trainable=False)
+        decay_step = 10
+        decay_rate = 0.96
+        learning_rate = tf.train.exponential_decay(learning_rate=start_learning_rate,
+                                                    global_step=global_step,
+                                                    decay_steps=decay_step,
+                                                    decay_rate=decay_rate)
+
+        # step.4 optimizer
+        # self.opt = tf.train.GradientDescentOptimizer(learning_rate).minimize(self.loss)
+        self.opt = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
+
+    def train(self, training_step=1000):
+        """
+        @input training_step 训练所需步骤
+        @return weight 列表， reconstructed adj
+        """
+        tf.global_variables_initializer().run()
+
+        for step in range(training_step):
+            self.sess.run(self.opt)
+            info = ''
+            for idx in range(len(self.layer_weight_list)):
+                tmp = 'W_%d: [%.4f] | '%(idx, self.sess.run(self.layer_weight_list[idx]))
+                info += tmp
+            # info = ['W_%d: %.4f'%(idx,self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+            print('step: [%d]/[%d], loss value: %.8f'%(step+1, training_step, self.sess.run(self.loss)), info)
+
+            if self.sess.run(self.loss) <= 0.00001:
+                break
+
+        weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+        reconstructed_Adj = self.sess.run(self.logits)
+        return weight_list, reconstructed_Adj
+
+
+
+
+
+
