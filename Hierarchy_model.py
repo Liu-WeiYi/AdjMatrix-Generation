@@ -165,6 +165,15 @@ class Hierarchy_adjMatrix_Generator(object):
                     print('trained graph ajd shape :', i.shape)
                 print('original adj shape: ', origin_adj.shape)
 
+        """ add 2017.04.18 """
+        # ==============================================
+        # 1. 将trained_graph_list 改成也需要考虑原网络的情况
+        # ==============================================
+        re_weight = 0.5
+        re_weight_origin_adj = re_weight * tf.ones(shape=origin_adj.shape)
+        trained_graph_adj_list.append(re_weight_origin_adj)
+        """ end add """
+
         # step.1 创建Weight~
         self.trained_graph_weight_list = []
         self.layer_weight_list = [] # for 方法 2 😀
@@ -198,13 +207,23 @@ class Hierarchy_adjMatrix_Generator(object):
         """尝试算两个度分布之间的KL距离"""
         # self.loss = tf.contrib.distributions.kl(tf.reduce_sum(origin_adj,1), tf.reduce_sum(adj,1))
         self.logits = self.logits + 0.000001 * tf.ones(shape=origin_adj.shape) # 保证分母不为0
+
+        """ add 2017.04.18 """
+        # ==============================================
+        # 1. 将trained_graph_list 改成也需要考虑原网络的情况
+        # ==============================================
+        margin = 0
+        margin_adj = margin*tf.ones(shape=origin_adj.shape)
+        origin_adj = origin_adj-margin_adj
         y = origin_adj/self.logits
+        """ end add """
+
         self.loss = tf.abs(tf.reduce_mean(-tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=y)))
 
         """learning rate decay... from TF_API"""
-        start_learning_rate = 0.001
+        start_learning_rate = 0.1
         global_step = tf.Variable(0, trainable=False)
-        decay_step = 1000
+        decay_step = 100
         decay_rate = 0.96
         learning_rate = tf.train.exponential_decay(learning_rate=start_learning_rate,
                                                     global_step=global_step,

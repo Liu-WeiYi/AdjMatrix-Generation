@@ -23,7 +23,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # For Hierarchy GAN itself
-    parser.add_argument("--training_step",          type=int,   default=10000,       help="specify training step for hierarchy gan")
+    parser.add_argument("--training_step",          type=int,   default=500,       help="specify training step for hierarchy gan")
 
     # Current Net Name
     parser.add_argument("--Dataset",                type=str,   default="facebook",  help="Datasets Choose")
