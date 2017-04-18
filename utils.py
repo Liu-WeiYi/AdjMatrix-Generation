@@ -22,20 +22,27 @@ import numpy as np
 #         permute_number 每一个邻接矩阵需要变化的次数
 # @output: permute_adj_list 完成变换后的列表 (该列表的长度应该是 permute_numter * len(adj_list) + len(adj_list))
 # ------------------------------
-def permute_adj(adj_list, permute_number):
-    permute_adj_list = [].extend(adj_list)
+def permute_adjs(adj_list, permute_number):
+    permute_adj_list = adj_list
 
-    length = adj.shape[0]
+    length = adj_list[0].shape[0]
     original_idx = [i for i in range(length)]
 
-    for adj in adj_list:
-        for _ in range(permute_number):
-            permute_idx = np.random.shuffle(original_idx)
+    for adj_idx in range(len(adj_list)):
+        print('\t--------------------------------')
+        for i in range(permute_number):
+            print('\t%dth adj, permute %d adj...'%(adj_idx, i))
+
+            adj = adj_list[adj_idx]
+
+            permute_idx = np.random.permutation(original_idx)
             # from http://stackoverflow.com/questions/20265229/rearrange-columns-of-numpy-2d-array
             i = np.argsort(permute_idx)
-            permuted_adj = permute_adj(:,i)
+            permuted_adj = adj[:,i]
             # end from
-            permute_adj_list.append(permute_adj)
+            permute_adj_list.append(permuted_adj)
+
+    return permute_adj_list
 
 
 

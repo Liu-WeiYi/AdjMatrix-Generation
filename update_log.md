@@ -1,12 +1,20 @@
 # 大王叫我来巡山的开发日记~~
 
-## 2017.04.18
-### 1. 修改
+## 2017.04.18 (下午~)
+### 1. 为保证拟合正常，引入permutation~
+    --- 将原有的矩阵扩展到 permute_number个 ，其中每一个矩阵的扩展方式采用 矩阵变换 方式~ 具体函数见 utils.py/permute_adjs()
+
+## 2017.04.18 (上午~)
+### 1. 修改 --- 效果不错哦！
     --- 通过比对结果可以发现，GAN没有学到度数大的节点的特征。在它那边基本上都是度数小的节点占主导地位。
-    --- 我认为这个是切割的问题，导致度数大的节点的信息会被丢失。这有可能表明我们在 重构矩阵 的时候需要 再 加上 原始矩阵的信息
-                -- 即，更新re_adj 为 re_adj = w1*adj1+w2*adj2+w3*adj3+...+w*original_adj + b
-                -- 原始矩阵首先应该做一个权重化，该权重代表的是 考虑原始矩阵的百分比。如果过于考虑原始矩阵的拓扑结构，则会引入噪声；而不考虑原始矩阵的拓扑结构，则可能会丢失信息
-                -- Loss Function中应该遵循的规律不再是 原始矩阵≈ 生成矩阵；而变成 原始矩阵 ≈ 生成矩阵 + margin
+    --- 我认为这个是切割的问题，导致度数大的节点的信息会被丢失。这有可能表明我们在 重构矩阵 的时候需要 再 加上 原始矩阵的信息。因为毕竟原始矩阵是没有丢失任何信息的！
+            -- 即，更新re_adj 为 re_adj = w1*adj1+w2*adj2+w3*adj3+...+w*original_adj + b
+            -- 原始矩阵首先应该做一个权重化，该权重代表的是 考虑原始矩阵的百分比。如果过于考虑原始矩阵的拓扑结构，则会引入噪声；而不考虑原始矩阵的拓扑结构，则可能会丢失信息
+### 2. Fix Bugs
+    --- 输出矩阵应该采用 sigmoid函数，将输出映射到 [0,1] 上
+            -- step.1: 将logits归一化       >>> tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
+            -- step.2: 将logits按照均值平移  >>> tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
+            -- step.3: 最后通过sigmoid映射   >>> reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
 
 ## 2017.04.17
 ### 1. 修改
@@ -19,8 +27,8 @@
 ## 2017.04.15
 ### 1. 增加
     --- ⭐️️️️ ️️⭐️ ⭐️ 搭建Hierarchy GAN的学习平台，目标是使得重构回去的矩阵与原始矩阵之间的L1-norm最小
-                --1. 重构矩阵 re_adj = w1*adj1+w2*adj2+w3*adj3+... [w1 - 第layer层的权重 | adj1 - 第layer层重构出的adj;]
-                --2. 优化方式 learning_rate_decay / AdamOptimizer
+            --1. 重构矩阵 re_adj = w1*adj1+w2*adj2+w3*adj3+... [w1 - 第layer层的权重 | adj1 - 第layer层重构出的adj;]
+            --2. 优化方式 learning_rate_decay / AdamOptimizer
 
 ## 2017.04.14
 ### 1. 增加

@@ -170,6 +170,16 @@ class Hierarchy_adjMatrix_Generator(object):
         # 1. 将trained_graph_list 改成也需要考虑原网络的情况
         # ==============================================
         trained_graph_adj_list.append(origin_adj)
+
+        # ==============================================
+        # 2. Permute Adj to generate more adjs
+        # ==============================================
+        permute_number = 5
+        if debugFlag is True:
+            print("permuting adjs... ")
+        trained_graph_adj_list = permute_adjs(trained_graph_adj_list,permute_number)
+        if debugFlag is True:
+            print('permuted adjs number: ', len(trained_graph_adj_list))
         """ end add """
 
         # step.1 创建Weight~
@@ -236,7 +246,8 @@ class Hierarchy_adjMatrix_Generator(object):
                 info += tmp
             info += " bias: [%.4f]"%self.sess.run(self.bias)
             # info = ['W_%d: %.4f'%(idx,self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
-            print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
+            # print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
+            print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
 
             if self.sess.run(self.loss) <= 0.01:
                 break
