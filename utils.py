@@ -15,6 +15,33 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # ------------------------------
+# add in 2017.04.18
+# construct_topology()
+# @purpose: 对每一个邻接矩阵进行变换，以产生更多的邻接矩阵
+# @input: adj_list 邻接矩阵列表，其中列表中的每一项代表一个邻接矩阵
+#         permute_number 每一个邻接矩阵需要变化的次数
+# @output: permute_adj_list 完成变换后的列表 (该列表的长度应该是 permute_numter * len(adj_list) + len(adj_list))
+# ------------------------------
+def permute_adj(adj_list, permute_number):
+    permute_adj_list = [].extend(adj_list)
+
+    length = adj.shape[0]
+    original_idx = [i for i in range(length)]
+
+    for adj in adj_list:
+        for _ in range(permute_number):
+            permute_idx = np.random.shuffle(original_idx)
+            # from http://stackoverflow.com/questions/20265229/rearrange-columns-of-numpy-2d-array
+            i = np.argsort(permute_idx)
+            permuted_adj = permute_adj(:,i)
+            # end from
+            permute_adj_list.append(permute_adj)
+
+
+
+
+
+# ------------------------------
 # construct_topology()
 # @purpose: 根据每一小块邻接矩阵each_part，构建出完整的拓扑结构~
 # ------------------------------
