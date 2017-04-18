@@ -51,7 +51,7 @@ def adj2Graph(adj, edgesNumber):
     return graph
 
 
-def main(filename, type):
+def main(filename, type, constructed_graph = -1):
     # 1. original graph
     original_graph_path = os.path.join("data",filename,"")
     original_graph = generate_graph(original_graph_path,filename,-1)
@@ -61,8 +61,11 @@ def main(filename, type):
 
 
     # 2. reconstruct graph
-    reconstruct_graph_path = os.path.join("reconstruction", filename, type,"")
-    reconstruct_graph_adj = pickle.load(open(glob.glob(reconstruct_graph_path+"*.adj")[0],'rb'))
+    if constructed_graph == -1:
+        reconstruct_graph_path = os.path.join("reconstruction", filename, type,"")
+        reconstruct_graph_adj = pickle.load(open(glob.glob(reconstruct_graph_path+"*.adj")[0],'rb'))
+    else:
+        reconstruct_graph_adj = constructed_graph
     reconstruct_graph = adj2Graph(reconstruct_graph_adj, edgesNumber = len(original_graph.edges()))
     print('edge number: ', len(reconstruct_graph.edges()))
     plt.figure("reconstruct graph degree distribution")

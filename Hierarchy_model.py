@@ -171,27 +171,40 @@ class Hierarchy_adjMatrix_Generator(object):
         count = 0
         for adj in trained_graph_adj_list:
             """每一个邻接矩阵 生成不一样的权重"""
-            layer_weight = tf.Variable(tf.random_uniform([1],minval=-1,maxval=1),name="weight_%d"%count)
+            layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
             self.layer_weight_list.append(layer_weight)
             adj_layer_weight = layer_weight*tf.ones(shape=adj.shape) # 扩展到每一个维度上~
             self.trained_graph_weight_list.append(adj_layer_weight)
 
             count += 1
 
+        # 创建bias
+        self.bias = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="bias")
+
         # step.2 logit
         tmp = [self.trained_graph_weight_list[idx]*trained_graph_adj_list[idx] for idx in range(len(self.trained_graph_weight_list))]
-        self.logits = tf.add_n(tmp,name="Layered_results")
+        # tmp = tmp.append(self.bias)
+        self.logits = tf.add(tf.add_n(tmp,name="Layered_results"),self.bias)
         # self.logits = tf.nn.sigmoid(tf.add_n(tmp,name="Layered_results")) --- 添加sigmoid作为规整之后，居然初始Loss非常高(0.5左右)，而且严重降低作战(Loss 衰减)效率。。。😳
 
         # step.3 loss
         origin_adj = tf.to_float(origin_adj)
+        """算L1距离"""
         # self.loss = tf.reduce_mean(tf.square(origin_adj-self.logits)) # L2-norm
-        self.loss = tf.reduce_mean(tf.abs(origin_adj-self.logits))      # L1-norm
+        # self.loss = tf.reduce_mean(tf.abs(origin_adj-self.logits))      # L1-norm
+        """算度之间的差别"""
+        # zeros = tf.zeros(shape=origin_adj.shape)
+        # self.loss = tf.reduce_sum(tf.to_float(tf.where(tf.not_equal(origin_adj-self.logits,zeros))))
+        """尝试算两个度分布之间的KL距离"""
+        # self.loss = tf.contrib.distributions.kl(tf.reduce_sum(origin_adj,1), tf.reduce_sum(adj,1))
+        self.logits = self.logits + 0.000001 * tf.ones(shape=origin_adj.shape) # 保证分母不为0
+        y = origin_adj/self.logits
+        self.loss = tf.abs(tf.reduce_mean(-tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=y)))
 
         """learning rate decay... from TF_API"""
-        start_learning_rate = 0.1
+        start_learning_rate = 0.001
         global_step = tf.Variable(0, trainable=False)
-        decay_step = 10
+        decay_step = 1000
         decay_rate = 0.96
         learning_rate = tf.train.exponential_decay(learning_rate=start_learning_rate,
                                                     global_step=global_step,
@@ -202,7 +215,7 @@ class Hierarchy_adjMatrix_Generator(object):
         # self.opt = tf.train.GradientDescentOptimizer(learning_rate).minimize(self.loss)
         self.opt = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
 
-    def train(self, training_step=1000):
+    def train(self, training_step=10000):
         """
         @input training_step 训练所需步骤
         @return weight 列表， reconstructed adj
@@ -215,15 +228,16 @@ class Hierarchy_adjMatrix_Generator(object):
             for idx in range(len(self.layer_weight_list)):
                 tmp = 'W_%d: [%.4f] | '%(idx, self.sess.run(self.layer_weight_list[idx]))
                 info += tmp
+            info += " bias: [%.4f]"%self.sess.run(self.bias)
             # info = ['W_%d: %.4f'%(idx,self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
             print('step: [%d]/[%d], loss value: %.8f'%(step+1, training_step, self.sess.run(self.loss)), info)
 
-            if self.sess.run(self.loss) <= 0.00001:
+            if self.sess.run(self.loss) <= 0.015:
                 break
 
         weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
-        reconstructed_Adj = self.sess.run(self.logits)
-        return weight_list, reconstructed_Adj
+        reconstructed_Adj = tf.nn.softmax(self.sess.run(self.logits))
+        return weight_list, reconstructed_Adj.eval()
 
 
 

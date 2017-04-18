@@ -14,6 +14,8 @@ import argparse
 from Hierarchy_model import *
 from utils import *
 
+import Compair as C
+
 # ------------------------------
 # arg input
 # ------------------------------
@@ -21,7 +23,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # For Hierarchy GAN itself
-    parser.add_argument("--training_step",          type=int,   default=500,       help="specify training step for hierarchy gan")
+    parser.add_argument("--training_step",          type=int,   default=10000,       help="specify training step for hierarchy gan")
 
     # Current Net Name
     parser.add_argument("--Dataset",                type=str,   default="facebook",  help="Datasets Choose")
@@ -99,6 +101,9 @@ def main(args):
             if debugFlag is True:
                 print('weight list: ', weight_list)
                 print('reconstructed_adj shape: ', reconstructed_Adj.shape)
+
+            # C.main("facebook","Hierarchy",reconstructed_Adj)
+
 
             # 4. save Model
             pickle.dump(reconstructed_Adj, open(trained_path+"reconstructed_%s.adj"%args.Dataset,'wb'))
