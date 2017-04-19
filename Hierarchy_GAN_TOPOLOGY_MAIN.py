@@ -14,8 +14,6 @@ import argparse
 from Hierarchy_model import *
 from utils import *
 
-import Compair as C
-
 # ------------------------------
 # arg input
 # ------------------------------
@@ -23,7 +21,8 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # For Hierarchy GAN itself
-    parser.add_argument("--training_step",          type=int,   default=500,       help="specify training step for hierarchy gan")
+    parser.add_argument("--training_step",          type=int,   default=500,       help="specify training step for hierarchy gan~ [500]")
+    parser.add_argument("--permutation_step",       type=int,   default=0,         help="specify how many times to permute the adj for each layer~ [0]")
 
     # Current Net Name
     parser.add_argument("--Dataset",                type=str,   default="facebook",  help="Datasets Choose")
@@ -73,7 +72,7 @@ def main(args):
             # 1. construct Model for each layer
             adjMatGen = Hierarchy_adjMatrix_Generator(
                 sess=sess,
-                dataset_name=args.Dataset,
+                dataset_name=args.Dataset, permutation_num=args.permutation_step,
                 epoch=args.epoch,
                 learning_rate=args.learning_rate,
                 Momentum = args.Momentum_term_adam,
