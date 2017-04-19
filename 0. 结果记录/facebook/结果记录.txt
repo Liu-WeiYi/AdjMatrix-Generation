@@ -1,0 +1,34 @@
+# 不进行 Permutation~~
+step: [500]/[500], loss value: 8.9040 W_0: [8.3925] | W_1: [8.4876] | W_2: [-0.9616] | W_3: [10.7845] |  bias: [11.2203]
+original edge number:  88234
+mean value:  0.454365
+cut value:  0.622459
+edge number:  45994
+Clustering:  0.6055467186200871   0.22859215302309768
+========================================================================================================================
+step: [100]/[100], loss value: 18.0529 W_0: [4.3500] | W_1: [5.1779] | W_2: [3.0730] | W_3: [4.5162] |  bias: [4.3535]
+original edge number:  88234
+mean value:  0.433656
+cut value:  0.588283
+edge number:  72252
+Clustering:  0.6055467186200871   0.591642941448977
+========================================================================================================================
+
+# 进行 Permutation~~
+
+1. Permutate_num = 4
+---------------------------------------------------------------------------
+step: [500]/[500], loss value: 8.0521
+weight list:  [array([ 7.74919176], dtype=float32), array([ 7.91761684], dtype=float32), array([-1.2556417], dtype=float32), array([ 12.61160183], dtype=float32), array([ 0.17818832], dtype=float32), array([ 0.08141641], dtype=float32), array([ 0.27360052], dtype=float32), array([ 0.14957836], dtype=float32), array([-0.00117768], dtype=float32), array([ 0.02851799], dtype=float32), array([ 0.27137101], dtype=float32), array([ 0.28390765], dtype=float32), array([ 0.32593268], dtype=float32), array([ 0.14521572], dtype=float32), array([ 0.44979945], dtype=float32), array([ 0.09419423], dtype=float32), array([ 0.28820989], dtype=float32), array([ 0.39397347], dtype=float32), array([ 0.22190756], dtype=float32), array([ 1.15255475], dtype=float32), array([ 1.20966625], dtype=float32), array([ 1.18812895], dtype=float32), array([ 1.13796294], dtype=float32), array([ 1.34653032], dtype=float32)]
+original edge number:  88234
+mean value:  0.448656
+cut value:  0.591742
+edge number:  45235
+Clustering:  0.6055467186200871   0.22784783437261927
+========================================================================================================================
+step: [100]/[100]
+original edge number:  88234
+mean value:  0.42759
+cut value:  0.539935
+edge number:  44286
+Clustering:  0.6055467186200871   0.5576769088707436

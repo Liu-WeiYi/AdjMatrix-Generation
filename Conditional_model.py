@@ -532,7 +532,7 @@ class Condition_adjMatrix_Generator(object):
                         )
             if debugFlag is True:
                 print('CONDITION h1 shape: ', h1.shape) # (20, 7,7, 50+28)
-            ## 扝平化, 以适用于后面的全连接
+            ## 扁平化, 以适用于后面的全连接
             h1 = tf.reshape(tensor=h1, shape=[self.batch_size, -1])
             if debugFlag is True:
                 print('linear h1: ', h1.shape) # (20, 7*7*78=3822)
