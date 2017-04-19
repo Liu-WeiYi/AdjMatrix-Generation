@@ -24,7 +24,7 @@ class Hierarchy_adjMatrix_Generator(object):
     @purpose: 随便给定一个网络，生成具有对应特性的网络
     """
     def __init__(self,
-                sess, dataset_name, permutation_num,
+                sess, dataset_name,
                 epoch=10, learning_rate=0.0002, Momentum=0.5,
                 batch_size=10,
                 generatorFilter=50, discriminatorFilter=50,
@@ -41,7 +41,6 @@ class Hierarchy_adjMatrix_Generator(object):
         @inputs:
             sess:               Current Tensorflow Session
             dataset_name:       Current Dataset Name
-            permutation_step:   Permutate Num
             epoch:              Epochs Number for Whole Datsets [20]
             learning_rate:      Init Learning Rate for Adam [0.0002]
             Momentum:           采用ADAM算法时所需要的Momentum的值 [0.5] --- based on DCGAN
@@ -62,7 +61,6 @@ class Hierarchy_adjMatrix_Generator(object):
         # GAN 参数初始化
         self.sess                = sess
         self.dataset_name        = dataset_name
-        self.permutation_num     = permutation_num
         self.epoch               = epoch
         self.learning_rate       = learning_rate
         self.Momentum            = Momentum
@@ -176,9 +174,9 @@ class Hierarchy_adjMatrix_Generator(object):
         # ==============================================
         # 2. Permute Adj to generate more adjs
         # ==============================================
-        permute_number = self.permutation_num
+        permute_number = 5
         if debugFlag is True:
-            print("permuting each adj for %d times"%permute_number)
+            print("permuting adjs... ")
         trained_graph_adj_list = permute_adjs(trained_graph_adj_list,permute_number)
         if debugFlag is True:
             print('permuted adjs number: ', len(trained_graph_adj_list))
@@ -247,26 +245,20 @@ class Hierarchy_adjMatrix_Generator(object):
                 tmp = 'W_%d: [%.4f] | '%(idx, self.sess.run(self.layer_weight_list[idx]))
                 info += tmp
             info += " bias: [%.4f]"%self.sess.run(self.bias)
-            if len(self.layer_weight_list) <= 4:
-                print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
-            else:
-                print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
+            # info = ['W_%d: %.4f'%(idx,self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+            # print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
+            print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
 
             if self.sess.run(self.loss) <= 0.01:
                 break
 
         weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+        # reconstructed_Adj = tf.nn.softmax(self.sess.run(self.logits))
         tmp_re_adj_raw = self.sess.run(self.logits)
         # meanValue = tf.reduce_mean(tmp_re_adj_raw)
         # tmp_re_adj_raw = tmp_re_adj_raw - meanValue*tf.ones(shape = tmp_re_adj_raw.shape)
-        # 先将 原矩阵 正则化，使之投影到 [0, 1]空间中
         maxValue = tf.reduce_max(tmp_re_adj_raw)
         tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
-        # 再平移均值于-meanValue处，这是为了契合 sigmoid函数的图像特征.
-        """
-        因为 sigmoid(X≥0) ≥ 0.5, 而tmp_re_adj_raw_norm中的值均大于0,
-        所以 如果不进行平移，会导致通过sigmoid映射之后的所有节点的值都在0.5以上
-        """
         tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
 
         reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)

@@ -1,14 +1,5 @@
 # 大王叫我来巡山的开发日记~~
 
-## 2017.04.19 (下午~)
-### 1. 创建新的分支，以记录所有的文件 permutation_loss_evaluation
-    --- 测试 permutation 对 loss的影响
-
-
-## 2017.04.19 (上午~)
-### 1. 修改Compair.py文件
-    --- 增加draw_degree文件
-
 ## 2017.04.18 (下午~)
 ### 1. 为保证拟合正常，引入permutation~
     --- 将原有的矩阵扩展到 permute_number个 ，其中每一个矩阵的扩展方式采用 矩阵变换 方式~ 具体函数见 utils.py/permute_adjs()

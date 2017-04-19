@@ -25,27 +25,24 @@ import numpy as np
 def permute_adjs(adj_list, permute_number):
     permute_adj_list = adj_list
 
-    if permute_number == 0:
-        return adj_list
-    else:
-        length = adj_list[0].shape[0]
-        original_idx = [i for i in range(length)]
+    length = adj_list[0].shape[0]
+    original_idx = [i for i in range(length)]
 
-        for adj_idx in range(len(adj_list)):
-            print('\t--------------------------------')
-            for i in range(permute_number):
-                print('\t%dth adj, permute %d adj...'%(adj_idx, i))
+    for adj_idx in range(len(adj_list)):
+        print('\t--------------------------------')
+        for i in range(permute_number):
+            print('\t%dth adj, permute %d adj...'%(adj_idx, i))
 
-                adj = adj_list[adj_idx]
+            adj = adj_list[adj_idx]
 
-                permute_idx = np.random.permutation(original_idx)
-                # from http://stackoverflow.com/questions/20265229/rearrange-columns-of-numpy-2d-array
-                i = np.argsort(permute_idx)
-                permuted_adj = adj[:,i]
-                # end from
-                permute_adj_list.append(permuted_adj)
+            permute_idx = np.random.permutation(original_idx)
+            # from http://stackoverflow.com/questions/20265229/rearrange-columns-of-numpy-2d-array
+            i = np.argsort(permute_idx)
+            permuted_adj = adj[:,i]
+            # end from
+            permute_adj_list.append(permuted_adj)
 
-        return permute_adj_list
+    return permute_adj_list
 
 
 
