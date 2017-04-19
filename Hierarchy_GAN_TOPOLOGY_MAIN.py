@@ -17,12 +17,12 @@ from utils import *
 # ------------------------------
 # arg input
 # ------------------------------
-def parse_args():
+def parse_args(trainStep, p_num):
     parser = argparse.ArgumentParser()
 
     # For Hierarchy GAN itself
-    parser.add_argument("--training_step",          type=int,   default=500,       help="specify training step for hierarchy gan~ [500]")
-    parser.add_argument("--permutation_step",       type=int,   default=0,         help="specify how many times to permute the adj for each layer~ [0]")
+    parser.add_argument("--training_step",          type=int,   default=trainStep,       help="specify training step for hierarchy gan~ [500]")
+    parser.add_argument("--permutation_step",       type=int,   default=p_num,         help="specify how many times to permute the adj for each layer~ [0]")
 
     # Current Net Name
     parser.add_argument("--Dataset",                type=str,   default="facebook",  help="Datasets Choose")
@@ -94,19 +94,30 @@ def main(args):
             # 2. using weight for each layer, and construct Hierarchy Model
             adjMatGen.modelConstruction()
 
+            print("=======================\nreconstuction Begin!\n=======================")
+            print("\npermutation num: %d\n"%args.permutation_step)
+            print("======================================================================")
+
             # 3. train Hierarchy Model to get weight and constructed adj
-            weight_list, reconstructed_Adj = adjMatGen.train(training_step=args.training_step)
+            adjMatGen.train(training_step=args.training_step)
             print("=======================\nreconstuction DOWN!\n=======================")
-            if debugFlag is True:
-                print('weight list: ', weight_list)
-                print('reconstructed_adj shape: ', reconstructed_Adj.shape)
-
-            # C.main("facebook","Hierarchy",reconstructed_Adj)
+            # if debugFlag is True:
+            #     print('weight list: ', weight_list)
+            #     print('reconstructed_adj shape: ', reconstructed_Adj.shape)
 
 
-            # 4. save Model
-            pickle.dump(reconstructed_Adj, open(trained_path+"reconstructed_%s.adj"%args.Dataset,'wb'))
+
+# add 2017.04.19
+# purpose: 测试 permutation 对 loss的影响
+def test_error_permutation(trainStep):
+    permutation = range(2,22,2)
+
+    for p_num in permutation:
+        main(parse_args(trainStep, p_num))
+# end add
+
 
 if __name__ == '__main__':
-    main(parse_args())
+    # main(parse_args())
+    test_error_permutation(trainStep=1000)
     print('DOWN')
