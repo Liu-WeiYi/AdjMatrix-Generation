@@ -16,9 +16,8 @@ import math
 from utils import *
 import Conditional_model as C_model
 from Conditional_Topology_MAIN import graph2Adj, generate_graph
-from Compair import compair_main
 
-debugFlag = False
+debugFlag = True
 
 class Hierarchy_adjMatrix_Generator(object):
     """
@@ -253,28 +252,24 @@ class Hierarchy_adjMatrix_Generator(object):
             else:
                 print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
 
-            """每100步记录一次"""
-            if (step+1) %100 == 0:
-                print("step == %d"%(step+1), 'save info into disk...')
-                currentStep = step+1
-                # 获得当前邻接矩阵
-                tmp_re_adj_raw = self.sess.run(self.logits)
-                maxValue = tf.reduce_max(tmp_re_adj_raw)
-                tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
-                tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
-                reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
+            if self.sess.run(self.loss) <= 0.01:
+                break
 
-                # 画 Degree， 保存 CC
-                compair_main(   filename=self.dataset_name,
-                                type="Hierarchy",
-                                adjDisk=reconstructed_Adj.eval(),
-                                permutation_step=self.permutation_num,
-                                step=currentStep
-                            )
-                # 保存 error
-                path        = os.path.join("reconstruction",self.dataset_name, "Hierarchy", "")
-                error_file  = open(path+self.dataset_name+"_error.txt","w+")
-                error_file.write(str(self.permutation_num)+"\t"+str(currentStep)+"\t"+str(self.sess.run(self.loss)))
+        weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+        tmp_re_adj_raw = self.sess.run(self.logits)
+        # meanValue = tf.reduce_mean(tmp_re_adj_raw)
+        # tmp_re_adj_raw = tmp_re_adj_raw - meanValue*tf.ones(shape = tmp_re_adj_raw.shape)
+        # 先将 原矩阵 正则化，使之投影到 [0, 1]空间中
+        maxValue = tf.reduce_max(tmp_re_adj_raw)
+        tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
+        # 再平移均值于-meanValue处，这是为了契合 sigmoid函数的图像特征.
+        """
+        因为 sigmoid(X≥0) ≥ 0.5, 而tmp_re_adj_raw_norm中的值均大于0,
+        所以 如果不进行平移，会导致通过sigmoid映射之后的所有节点的值都在0.5以上
+        """
+        tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
 
+        reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
+        return weight_list, reconstructed_Adj.eval()
 
 

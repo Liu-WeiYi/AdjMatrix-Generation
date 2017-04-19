@@ -1,8 +1,8 @@
 # 大王叫我来巡山的开发日记~~
 
 ## 2017.04.19 (下午~)
-### 1. 创建新的分支 permutation_loss_evaluation，测试 permutation 对 loss的影响
-    --- 在 hierarchy_gan_topology_main.py文件中新增 test_error_permutation。。。 以测试 permutation从0~20变化时error和permutation之间的关系
+### 1. 创建新的分支，以记录所有的文件 permutation_loss_evaluation
+    --- 测试 permutation 对 loss的影响
 
 
 ## 2017.04.19 (上午~)
