@@ -44,6 +44,8 @@ def draw_degree(reG,oriG,path,figure_name):
     plt.savefig(path+"combined_"+figure_name+".png")
     plt.savefig(path+"combined_"+figure_name+".pdf")
 
+    plt.clf()
+
 
 def adj2Graph(adj, edgesNumber):
     graph = nx.Graph()

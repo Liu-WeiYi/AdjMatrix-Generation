@@ -274,7 +274,7 @@ class Hierarchy_adjMatrix_Generator(object):
                 # 保存 error
                 path        = os.path.join("reconstruction",self.dataset_name, "Hierarchy", "")
                 error_file  = open(path+self.dataset_name+"_error.txt","w+")
-                error_file.write(str(self.permutation_num)+"\t"+str(currentStep)+"\t"+str(self.sess.run(self.loss)))
+                error_file.write(str(self.permutation_num)+"\t"+str(currentStep)+"\t"+str(self.sess.run(self.loss))+'\n')
 
 
 

@@ -105,12 +105,14 @@ def main(args):
             #     print('weight list: ', weight_list)
             #     print('reconstructed_adj shape: ', reconstructed_Adj.shape)
 
+            sess.close()
+
 
 
 # add 2017.04.19
 # purpose: 测试 permutation 对 loss的影响
 def test_error_permutation(trainStep):
-    permutation = range(2,22,2)
+    permutation = range(0,10,1)
 
     for p_num in permutation:
         main(parse_args(trainStep, p_num))
@@ -119,5 +121,5 @@ def test_error_permutation(trainStep):
 
 if __name__ == '__main__':
     # main(parse_args())
-    test_error_permutation(trainStep=1000)
+    test_error_permutation(trainStep=500)
     print('DOWN')
