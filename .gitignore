@@ -122,3 +122,17 @@ reconstruction/
 *.pickle
 
 *.adj
+
+data/facebook2/fackbook2.edge_list
+
+facebook_partition_info.pickle
+
+facebook_partition_info.pickle
+
+facebook_partition_info.pickle
+
+*.pickle
+
+*.pickle
+
+*.pickle

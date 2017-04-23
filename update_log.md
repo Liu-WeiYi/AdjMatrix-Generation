@@ -1,5 +1,15 @@
 # 大王叫我来巡山的开发日记~~
 
+## 2017.04.22
+### 1. 新建分支 MultiLayer_Hierarchy~
+    --- 实现 输入multilayer networks 输出 和这些网络具有相似特性的 自定义大小的网络~~
+        即 graph = GAN(input=multilayer_networks, n=desired_graph_size)
+
+## 2017.04.19
+### 1. 新建分支 permutation_loss_evaluation 进行permutation方法的联测~
+    --- 效果发现，degree distribution拟合比较好, 但是当step > 300之后，会出现 cluster coefficient急剧减小的情况·~
+
+
 ## 2017.04.18 (下午~)
 ### 1. 为保证拟合正常，引入permutation~
     --- 将原有的矩阵扩展到 permute_number个 ，其中每一个矩阵的扩展方式采用 矩阵变换 方式~ 具体函数见 utils.py/permute_adjs()
