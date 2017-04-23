@@ -21,7 +21,7 @@ debugFlag = True
 
 class Multilayer_Hiearchy_adjMatrix_Generator(object):
     """
-    @purpose: ?????????????????? ????
+    @purpose: 根据多个网络的特性，生成一个自定义大小的网络~
     """
     def __init__(self,sess, datasets_list, desired_size, reconstructDIR):
         """
@@ -40,14 +40,14 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         self.reconstructDIR = reconstructDIR
 
     def modelConstruction(self):
-        # step.0 ??/?? ?????? & ????
+        # step.0 读入/写入 训练数据 & 真实数据
         trained_graph_adj_list = []
         origin_adj_list = []
 
         for dataset in self.datasets_list:
-            """??????? ?????pickle???"""
+            """是否存在 pickle 文件"""
             if not os.path.exists('%s_adjs.pickle'%dataset):
-                # 1. ??trained ???????, ??? ???trained_graph_list?
+                # 1. 获取所有trained 数据, 并存储在trained_graph_list?
                 current_trained_graph_adj_list = []
                 trained_layer_path = os.path.join(self.reconstructDIR,dataset,"Hierarchy",'')
                 paths = glob.glob(trained_layer_path+"%s_*.nxgraph"%dataset)
@@ -64,7 +64,7 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
 
                 trained_graph_adj_list+=current_trained_graph_adj_list
 
-                # 2. ?????????????adj
+                # 2. 获取所有真实adj
                 original_graph_path = os.path.join("data", dataset, '')
                 origin_graph = generate_graph(original_graph_path,dataset,-1)
                 if debugFlag is True:
@@ -91,38 +91,38 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
             print('total origin graph adj length: ', len(origin_adj_list))
 
         # ===================================================
-        # 1. ?? ??????? ? Weight ?? ?? ??? Bias ??
+        # 1. 初始化 Weight 以及 Bias
         # ===================================================
         trained_graph_adj_list+= origin_adj_list
 
-        ## step.1 ??Weight~
+        ## step.1 init Weight~
         trained_graph_weight_list = []
         self.layer_weight_list = [] # for Hierarchy GAN~ ??
         count = 0
         for adj in trained_graph_adj_list:
-            """??????? ???????"""
+            """ 对于每一个adj, 给出 weight """
             layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
             self.layer_weight_list.append(layer_weight)
             trained_graph_weight_list.append(layer_weight)
 
             count += 1
 
-        ## step.2 ??bias
+        ## step.2 init bias
         self.bias = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="bias")
 
         # ===================================================
-        # 2. ?? ??????? ? ????? self.desired_size*self.desired_size ?
-        # ??: re_adj = w1*g1+w2*g2+... +w*g_real + bias
+        # 2. 将所有重构的网络 map 到 self.desired_size*self.desired_size 上
+        # 依据: re_adj = w1*g1+w2*g2+... +w*g_real + bias
         # ===================================================
 
-        # step.1 ??g1 -> g_desired_size
+        # step.1 map g1 -> g_desired_size
         tmp = []
         for idx in range(len(trained_graph_weight_list)):
-            # ??????
+            # 给定每一个weight
             adj_weight = trained_graph_weight_list[idx]
             adj = trained_graph_adj_list[idx]
             current_adj = adj_weight*adj
-            # ???desired_size?
+            # 投影到 desired_size 上
             linear_current_adj = tf.reshape(current_adj,[-1]) # flatten matrix~
             linear_current_adj = tf.expand_dims(linear_current_adj,axis=-1)
             linear_length = linear_current_adj.shape.as_list()[0]
@@ -133,20 +133,20 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
             tmp.append(reshape_adj)
 
         ## step.2 w1*g1+w2*g2+... +wn*gn + w*g_real + bias~~
-        ## ??, ?????g?????????????????
+        ## 重构具有期望graph_size 的 graph
         self.logits = tf.add_n(tmp,name="Layered_results")+self.bias
 
-        ## step.3 ??????????? degree_distribution self.logits_degree
+        ## step.3 抽取重构矩阵的 degree_distribution self.logits_degree
         self.logits_degree = tf.reduce_sum(self.logits,1)
-        """ ??????????????degree distribution????????!! """
+        """ 注意, 这里 degree distribution 是进行排序了的 !! """
         self.logits_degree,_ = tf.nn.top_k(self.logits_degree, k=self.logits_degree.get_shape().as_list()[0])
 
         # ===================================================
-        # 3. ?? ?????? ? ????? self.desired_size*self.desired_size ?
+        # 3. 投影所有真实网络到预期网络上 self.desired_size*self.desired_size ?
         # ===================================================
 
-        ## step.1 ????? ??g_real -> g_real_desired_size, ??????????g?Degree Distribution
-        """????????, ???????degree distribution??????, ??????????????"""
+        ## step.1 投影 g_real -> g_real_desired_size
+        """注意, 这里的每一个真实网络应该对应一个 degree distribution, 而不应该像重构网络那样，所有的对应一个degree distribution"""
         origin_adjs_degree = []
         for adj in origin_adj_list:
             # 1. reshape original adj
@@ -163,18 +163,18 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
             # 3. store them into a list~
             origin_adjs_degree.append(reshape_adj_degree)
 
-        ## step.2 ??degree distribution ????????????????
+        ## step.2 对所有 degree distribution 取平均~~ 以保证每一个degree distribution 落在相应范围内
         self.all_layer_degree = tf.add_n(inputs=origin_adjs_degree)/len(origin_adj_list)
 
         # ===================================================
-        # 4. ?? loss func, learning_rate, optimizor
+        # 4. 定义 loss func, learning_rate, optimizor
         # ===================================================
 
         ## step.1 loss func
-        """??1: ???? L1 Norm"""
+        """方法1: 采用 L1 Norm"""
         #self.loss = tf.reduce_mean(tf.abs(self.all_layer_degree - self.logits))
-        """??2: ???????????KL??"""
-        self.logits_degree = self.logits_degree + 0.000001 # ??????0
+        """方法2: 采用 degree distribution 之间的 KL 距离"""
+        self.logits_degree = self.logits_degree + 0.000001 # 保证分母不为 0
         y = self.all_layer_degree/self.logits_degree
         self.loss = tf.abs(tf.reduce_mean(-tf.nn.softmax_cross_entropy_with_logits(logits=self.logits_degree, labels=y)))
 
@@ -193,10 +193,10 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         #self.opt = tf.train.GradientDescentOptimizer(learning_rate).minimize(self.loss)
         self.opt = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
 
-    def train(self, training_step=10000):
+    def train(self, training_step=500):
         """
-        @input training_step ??????
-        @return weight ??? reconstructed adj
+        @input training_step 需要训练的次数
+        @return weight & reconstructed adj
         """
         tf.global_variables_initializer().run()
 
