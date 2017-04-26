@@ -18,6 +18,8 @@ import Conditional_model as C_model
 from Conditional_Topology_MAIN import graph2Adj, generate_graph
 
 debugFlag = True
+if debugFlag is True:
+    import time
 
 class Multilayer_Hiearchy_adjMatrix_Generator(object):
     """
@@ -33,7 +35,7 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
             desired_size:       desired output reconstructed graph size
             reconstructDIR:     reconstructed graph's dir
         """
-        # ???
+        # 初始化~
         self.sess           = sess
         self.datasets_list  = datasets_list
         self.desired_size   = desired_size
@@ -82,7 +84,7 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
                 if debugFlag is True:
                     for i in current_trained_graph_adj_list:
                         print('trained graph ajd shape :', i.shape)
-                    print('original adj shape: ', i.shape)
+                    print('original adj shape: ', current_origin_adj.shape)
                 trained_graph_adj_list += current_trained_graph_adj_list
                 origin_adj_list.append(current_origin_adj)
 
@@ -122,14 +124,15 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
             adj_weight = trained_graph_weight_list[idx]
             adj = trained_graph_adj_list[idx]
             current_adj = adj_weight*adj
-            # 投影到 desired_size 上
-            linear_current_adj = tf.reshape(current_adj,[-1]) # flatten matrix~
-            linear_current_adj = tf.expand_dims(linear_current_adj,axis=-1)
-            linear_length = linear_current_adj.shape.as_list()[0]
-            """Y=AX"""
-            TransformM = tf.truncated_normal(shape=[self.desired_size**2, linear_length],mean=0.0,stddev=1.0)
-            reshape_linear_current_adj = tf.matmul(TransformM,linear_current_adj)
-            reshape_adj = tf.reshape(reshape_linear_current_adj, shape=[self.desired_size, self.desired_size])
+            # # 投影到 desired_size 上
+            # linear_current_adj = tf.reshape(current_adj,[-1]) # flatten matrix~
+            # linear_current_adj = tf.expand_dims(linear_current_adj,axis=-1)
+            # linear_length = linear_current_adj.shape.as_list()[0]
+            # """Y=AX"""
+            # TransformM = tf.truncated_normal(shape=[self.desired_size**2, linear_length],mean=0.0,stddev=1.0)
+            # reshape_linear_current_adj = tf.matmul(TransformM,linear_current_adj)
+            # reshape_adj = tf.reshape(reshape_linear_current_adj, shape=[self.desired_size, self.desired_size])
+            reshape_adj = self.__reshapeAdj(current_adj,self.desired_size)
             tmp.append(reshape_adj)
 
         ## step.2 w1*g1+w2*g2+... +wn*gn + w*g_real + bias~~
@@ -151,12 +154,13 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         for adj in origin_adj_list:
             # 1. reshape original adj
             adj = tf.to_float(adj)
-            linear_adj = tf.reshape(adj,[-1])
-            linear_adj = tf.expand_dims(linear_adj,axis=-1)
-            linear_length = linear_adj.get_shape().as_list()[0]
-            TransformM = tf.truncated_normal(shape=[self.desired_size**2, linear_length],mean=0.0,stddev=1.0)
-            reshape_linear_adj = tf.matmul(TransformM, linear_adj)
-            reshape_adj = tf.reshape(reshape_linear_adj, shape=[self.desired_size, self.desired_size])
+            # linear_adj = tf.reshape(adj,[-1])
+            # linear_adj = tf.expand_dims(linear_adj,axis=-1)
+            # linear_length = linear_adj.get_shape().as_list()[0]
+            # TransformM = tf.truncated_normal(shape=[self.desired_size**2, linear_length],mean=0.0,stddev=1.0)
+            # reshape_linear_adj = tf.matmul(TransformM, linear_adj)
+            # reshape_adj = tf.reshape(reshape_linear_adj, shape=[self.desired_size, self.desired_size])
+            reshape_adj = self.__reshapeAdj(adj, self.desired_size)
             # 2. get degree value
             reshape_adj_degree = tf.reduce_sum(reshape_adj,1)
             reshape_adj_degree, _ = tf.nn.top_k(reshape_adj_degree, k=self.desired_size)
@@ -220,5 +224,40 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
 
         reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
         return weight_list, reconstructed_Adj.eval()
+
+    def __reshapeAdj(self, oriAdj, desired_size):
+        """
+        @purpose: 投影到 desired_size 上
+        @input: oriAdj --- 原始矩阵 / desired_size --- 期望矩阵大小
+        @output: reshapeAdj
+        """
+        if debugFlag is True:
+            print('*** running reshape...')
+            start = time.time()
+
+        # step.1 flatten matrix~
+        linear_current_adj = tf.reshape(oriAdj,[-1])
+        linear_length = linear_current_adj.shape.as_list()[0]
+
+        # step.1 获取原始矩阵的size
+        origin_size = oriAdj.shape.as_list()[0]
+        # step.2 按片映射矩阵
+        """Y=AX"""
+        linear_reshapeAdj = tf.constant([],dtype=tf.float32)
+        for slice in range(self.desired_size**2):
+            slice_TransformM = tf.truncated_normal(shape=[linear_length],mean=0.0,stddev=1.0)
+            # adj_current_column = oriAdj[:,slice]
+            # value = tf.reduce_sum(slice_TransformM * adj_current_column)
+            value = tf.reduce_sum(slice_TransformM * linear_current_adj, keep_dims=True)
+            linear_reshapeAdj = tf.concat([linear_reshapeAdj, value],axis=0)
+
+        reshape_adj = tf.reshape(linear_reshapeAdj, shape=[self.desired_size, self.desired_size])
+
+        if debugFlag is True:
+            print('reshaped adj size: ', reshape_adj.shape, end='\t')
+            print('used time: ', time.time()-start)
+
+
+        return reshape_adj
 
 

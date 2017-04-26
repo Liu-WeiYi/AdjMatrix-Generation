@@ -17,6 +17,8 @@ from Hierarchy_model import *
 from utils import *
 from Hierarchy_model_Multilayer import *
 
+import Compair as C
+
 
 # ------------------------------
 # arg input
@@ -29,8 +31,8 @@ def parse_args():
     # Current Net Name
     parser.add_argument("--Datasets",               type=str,   nargs="+",   default=["facebook", "facebook2"],   help="Datasets Choose")
     # Desired Generated Net Size (期望生成的网络大小)
-    parser.add_argument("--Desired_graph_size",     type=int,   default=100,             help="Desired Generated Net Size" )
-    
+    parser.add_argument("--Desired_graph_size",     type=int,   default=4000,             help="Desired Generated Net Size" )
+
     parser.add_argument("--reconstruction_dir",     type=str,   default="reconstruction", help="Directory Name to save reconstructed Topology [reconstruction]")
 
     return parser.parse_args()
@@ -64,7 +66,10 @@ def main(args):
                 print('weight list: ', weight_list)
                 print('reconstructed_adj shape: ', reconstructed_Adj.shape)
 
+            # save Model
+            pickle.dump(reconstructed_Adj, open(trained_path+"WS1_WS2_reconstructed_%s.adj",'wb'))
 
+            C.main(filename=args.Datasets[0],type="Hierarchy",constructed_graph=reconstructed_Adj)
 
 
 

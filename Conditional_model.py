@@ -347,6 +347,7 @@ class Condition_adjMatrix_Generator(object):
             1. 只需要楼上 sample_input       就可以让Generator生成相应的 Adj_Mat~
             2. 再加上楼下 partition_labels   就可以让Generator生成某一类的 Adj_Mat~
             """
+            
             partition_mat,partition_labels = self.__load_AdjMatInfo(AdjMat_OutDegree_Dir = self.inputPartitionDIR,
                                                                     startPoint=i,
                                                                     endPoint=i+1,
@@ -686,11 +687,15 @@ class Condition_adjMatrix_Generator(object):
             #     if i+1 % 5000 == 0:
             #         print('transfer %d Tensors'%i)
             if i == startPoint:
+                if i not in adj.keys():
+                    i = len(adj.keys())-1
                 #Tensor = tf.stack([adj[i]],axis=0)
                 Tensor = np.stack([adj[i]],axis=0)
                 #DegreeTensor = tf.stack([degree[i]],axis=0)
                 DegreeTensor = np.stack([degree[i]],axis=0)
             else:
+                if i not in adj.keys():
+                    i = len(adj.keys())-1
                 #slice = tf.stack([adj[i]],axis=0)
                 slice = np.stack([adj[i]],axis=0)
                 #slice_degree = tf.stack([degree[i]],axis=0)

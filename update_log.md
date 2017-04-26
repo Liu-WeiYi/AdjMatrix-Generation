@@ -1,5 +1,9 @@
 # 大王叫我来巡山的开发日记~~
 
+## 2017.04.25
+### 1. 修改MultiLayer_Hierarchy分支~
+    --- 采用 分片的方式 进行 网络大小的转换 (新增函数: Hierarchy_model_Multilayer.py/__reshapeAdj(self, oriAdj, desired_size) 函数)
+
 ## 2017.04.22
 ### 1. 新建分支 MultiLayer_Hierarchy~
     --- 实现 输入multilayer networks 输出 和这些网络具有相似特性的 自定义大小的网络~~
