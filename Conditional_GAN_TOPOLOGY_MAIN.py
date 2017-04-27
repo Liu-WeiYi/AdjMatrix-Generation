@@ -2,8 +2,7 @@
 #coding:utf-8
 """
   Author:   weiyiliu --<weiyiliu@us.ibm.com>
-  Purpose:  Condition GAN-Topology 生成器 主程序入口
-            采用DCGAN思想 生成拓扑网络
+  Purpose:  Condition GAN-Topology Graph Generator (based on DCGAN)
   Created: 04/08/17
 """
 import os
@@ -66,7 +65,7 @@ def main(args):
         print('[!!!]current dir do not exist: ', dir)
         raise SystemExit('[!!!]Please create Data FIRST !!')
 
-    with tf.device('cpu:0'): # 强制在CPU上运行 囧~
+    with tf.device('cpu:0'): # Only for my MacPro~~ Sad Story...
         with tf.Session(config=tf.ConfigProto(log_device_placement=False)) as sess:
             # 1. construct Model
             adjMatGen = Condition_adjMatrix_Generator(
@@ -94,7 +93,7 @@ def main(args):
                 link_possibility=args.link_possibility
             )
 
-            show_all_variables() # TF中的所有变量
+            show_all_variables() # show vars in TF
 
             # 2. train Model
             adjMatGen.train()

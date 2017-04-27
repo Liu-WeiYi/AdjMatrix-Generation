@@ -26,7 +26,7 @@ def draw_degree(G):
 def adj2Graph(adj, edgesNumber):
     graph = nx.Graph()
 
-    # 将有向网络变成无向网络
+    # map directed adj to un-directed one
     adj = (adj+np.transpose(adj))/2
 
 
@@ -34,9 +34,6 @@ def adj2Graph(adj, edgesNumber):
     print("mean value: ", meanValue)
 
     flatten_value = sorted(list(adj.flatten()),reverse=True)
-    # 去除0元素
-    #flatten_value = [i for i in flatten_value if i != 0]
-    #cutvalue = np.mean(np.array(flatten_value))
     cutvalue = flatten_value[edgesNumber-1]
 
     print("cut value: ", cutvalue)
@@ -79,12 +76,10 @@ def main(filename, type, constructed_graph = -1):
     plt.show()
 
 
-
-
 if __name__ == "__main__":
     try:
-        filename  = sys.argv[1]     # 网络名称
-        type = sys.argv[2]     # 构建网络的方式
+        filename  = sys.argv[1]     # network name
+        type = sys.argv[2]     # Now there is only "Hierarchy" In the near future, we will develop "Condition" one~
     except :
         sys.exit("Usage: python3 Compair.py <filename> <Type>\
                         \n\t <filename> : current Edge List File\
