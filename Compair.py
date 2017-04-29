@@ -15,13 +15,44 @@ import numpy as np
 import math
 
 from Conditional_Topology_MAIN import graph2Adj, generate_graph
-
+'''
 def draw_degree(G):
     degree = nx.degree_histogram(G)
     x = range(len(degree))
     y = [z/float(sum(degree)) for z in degree]
 
     plt.loglog(x,y,color='blue',linewidth=2)
+'''
+def draw_degree(reG,oriG,path,figure_name):
+    if not os.path.exists(path):
+        print("some error happend?")
+        os.makedirs(path)
+
+    # 1. draw reconstruct graph~
+    plt.figure("reconstruct graph degree distribution")
+    degree_reG = nx.degree_histogram(reG)
+    x_reG = range(len(degree_reG))
+    y_reG = [z/float(sum(degree_reG)) for z in degree_reG]
+
+    plt.loglog(x_reG,y_reG,color='blue',linewidth=2)
+    plt.savefig(path+figure_name+".png")
+    plt.savefig(path+figure_name+".pdf")
+
+    plt.clf()
+
+    # 2. draw reconstruct graph and original graph on a graph~
+    plt.figure("reGraph and originGraph")
+    degree_oriG = nx.degree_histogram(oriG)
+    x_oriG = range(len(degree_oriG))
+    y_oriG = [z/float(sum(degree_oriG)) for z in degree_oriG]
+
+    plt.loglog(x_reG,y_reG,color='blue',linewidth=2)
+    plt.loglog(x_oriG,y_oriG,color='red',linewidth=2)
+
+    plt.savefig(path+"combined_"+figure_name+".png")
+    plt.savefig(path+"combined_"+figure_name+".pdf")
+
+    plt.clf()
 
 def adj2Graph(adj, edgesNumber):
     graph = nx.Graph()
@@ -55,10 +86,11 @@ def main(filename, type, constructed_graph = -1):
     # 1. original graph
     original_graph_path = os.path.join("data",filename,"")
     original_graph = generate_graph(original_graph_path,filename,-1)
+    '''
     plt.figure("original graph degree distribution")
     draw_degree(original_graph)
     print('original edge number: ',len(original_graph.edges()))
-
+    '''
 
     # 2. reconstruct graph
     if constructed_graph == -1:
@@ -68,16 +100,13 @@ def main(filename, type, constructed_graph = -1):
         reconstruct_graph_adj = constructed_graph
     reconstruct_graph = adj2Graph(reconstruct_graph_adj, edgesNumber = len(original_graph.edges()))
     print('edge number: ', len(reconstruct_graph.edges()))
-    plt.figure("reconstruct graph degree distribution")
-    draw_degree(reconstruct_graph)
+    #plt.figure("reconstruct graph degree distribution")
+    draw_degree(reconstruct_graph, original_graph, os.path.join("reconstruction", filename, type, ""), filename)
 
     print("Clustering: ",nx.average_clustering(original_graph), ' ', nx.average_clustering(reconstruct_graph))
     # print("Diameter: ", nx.average_shortest_path_length(original_graph), ' ', nx.average_shortest_path_length(reconstruct_graph))
     # print("degree centrality: ", nx.degree_centrality(original_graph), ' ',  nx.degree_centrality(reconstruct_graph))
     #print("closeness centrality: ", nx.closeness_centrality(original_graph), ' ', nx.closeness_centrality(reconstruct_graph))
-
-    plt.show()
-
 
 
 

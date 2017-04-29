@@ -686,11 +686,15 @@ class Condition_adjMatrix_Generator(object):
             #     if i+1 % 5000 == 0:
             #         print('transfer %d Tensors'%i)
             if i == startPoint:
+                if i not in adj.keys():
+                    i = len(adj.keys())-1
                 #Tensor = tf.stack([adj[i]],axis=0)
                 Tensor = np.stack([adj[i]],axis=0)
                 #DegreeTensor = tf.stack([degree[i]],axis=0)
                 DegreeTensor = np.stack([degree[i]],axis=0)
             else:
+                if i not in adj.keys():
+                    i = len(adj.keys())-1
                 #slice = tf.stack([adj[i]],axis=0)
                 slice = np.stack([adj[i]],axis=0)
                 #slice_degree = tf.stack([degree[i]],axis=0)

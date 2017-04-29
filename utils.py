@@ -57,9 +57,10 @@ def construct_topology(graph_name, each_part, Node2Part):
     weighted_graph = nx.DiGraph(name=graph_name)
 
     for part in each_part.keys():
+        if part in Node2Part.keys():
         # 对每一块~
-        adj         = each_part[part]
-        adjID_node  = Node2Part[part]
+            adj         = each_part[part]
+            adjID_node  = Node2Part[part]
 
         # 构建 网络的一部分
         for src_adjIdx in range(len(list(adj))):
