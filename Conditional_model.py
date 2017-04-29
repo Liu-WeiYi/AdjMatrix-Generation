@@ -347,6 +347,7 @@ class Condition_adjMatrix_Generator(object):
             1. 只需要楼上 sample_input       就可以让Generator生成相应的 Adj_Mat~
             2. 再加上楼下 partition_labels   就可以让Generator生成某一类的 Adj_Mat~
             """
+
             partition_mat,partition_labels = self.__load_AdjMatInfo(AdjMat_OutDegree_Dir = self.inputPartitionDIR,
                                                                     startPoint=i,
                                                                     endPoint=i+1,

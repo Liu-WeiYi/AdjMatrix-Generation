@@ -77,6 +77,7 @@ def construct_topology(graph_name, each_part, Node2Part):
                             weighted_graph.add_node(dst)
                             weighted_graph.add_edge(src,dst,weight=adj[src_adjIdx][dst_Idx])
 
+
     return weighted_graph
 
 
