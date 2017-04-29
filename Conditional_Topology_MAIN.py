@@ -23,7 +23,7 @@ import numpy as np
 import networkx as nx
 import math
 
-debugFlag = False
+debugFlag = True
 
 # ------------------------------
 # generate_graph --- step.0
@@ -176,6 +176,7 @@ def generate_AdjMat(path, graph, MatSize, classNum):
         print('missing group: ', original_part-check)
 
     # 3. 写文件~
+    print("input argument ,,,,,,,", path+graph.name+'_%d.graph'%max_size)
     pickle.dump(part2Node, open(path+graph.name+'_%d.map'%max_size,'wb'))
     pickle.dump(adj, open(path+graph.name+'_%d.graph'%max_size,'wb'))
     pickle.dump(outDegree, open(path+graph.name+'_%d.degree'%max_size,'wb'))

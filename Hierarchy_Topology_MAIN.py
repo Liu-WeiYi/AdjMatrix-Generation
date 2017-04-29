@@ -24,11 +24,12 @@ import sys
 import glob
 import math
 import pickle
+import networkx as nx
 
 import Conditional_Topology_MAIN as CTM
 from external_tools.community_louvain import generate_dendrogram
 
-debugFlag = True
+debugFlag = False
 
 
 if __name__ == "__main__":
@@ -51,6 +52,7 @@ if __name__ == "__main__":
         for node in layer.keys(): # 对每一层，记录社团个数
             com.add(layer[node])
         layer_size.append(len(com))
+    layer_size = layer_size[:4]
     if debugFlag is True:
         print('used time: %.4f\tnet-%s layers infor\t'%(time.time()-start, filename), len(layer_size), layer_size)
 

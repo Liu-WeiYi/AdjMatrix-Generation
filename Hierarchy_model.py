@@ -6,6 +6,8 @@
   Created:  04/13/17
 """
 import numpy as np
+import networkx as nx
+import pandas as pd
 import tensorflow as tf
 import time
 import os
@@ -16,6 +18,7 @@ import math
 from utils import *
 import Conditional_model as C_model
 from Conditional_Topology_MAIN import graph2Adj, generate_graph
+from Compair import adj2Graph, draw_degree
 
 debugFlag = True
 
@@ -238,6 +241,11 @@ class Hierarchy_adjMatrix_Generator(object):
         """
         tf.global_variables_initializer().run()
 
+        original_graph_path = os.path.join("data", self.inputPartitionDIR, '')
+        original_graph = generate_graph(original_graph_path, self.dataset_name, -1)
+        df = getDF(original_graph, 0, 0)
+        counter = 0
+
         for step in range(training_step):
             self.sess.run(self.opt)
             info = ''
@@ -247,10 +255,27 @@ class Hierarchy_adjMatrix_Generator(object):
             info += " bias: [%.4f]"%self.sess.run(self.bias)
             # info = ['W_%d: %.4f'%(idx,self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
             # print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
-            print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
+            #print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
+
+            counter+=1
+            if counter % 100 == 0:
+                print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
+                weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+                tmp_re_adj_raw = self.sess.run(self.logits)
+                maxValue = tf.reduce_max(tmp_re_adj_raw)
+                tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
+                tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
+                reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
+                reconstructed_graph = adj2Graph(reconstructed_Adj.eval(), edgesNumber = len(original_graph.edges()))
+                draw_degree(reconstructed_graph, original_graph, os.path.join("reconstruction", self.dataset_name, 'Hierarchy', ''), self.dataset_name)
+                df2 = getDF(reconstructed_graph, self.sess.run(self.loss), weight_list)
+                df = df.append(df2)
+                #print("df2", df2)
+                #print("df", df)
 
             if self.sess.run(self.loss) <= 0.01:
                 break
+
 
         weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
         # reconstructed_Adj = tf.nn.softmax(self.sess.run(self.logits))
@@ -260,8 +285,21 @@ class Hierarchy_adjMatrix_Generator(object):
         maxValue = tf.reduce_max(tmp_re_adj_raw)
         tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
         tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
-
         reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
+        reconstructed_graph = adj2Graph(reconstructed_Adj.eval(), edgesNumber = len(original_graph.edges()))
+        draw_degree(reconstructed_graph, original_graph, os.path.join("reconstruction", self.dataset_name, 'Hierarchy', ''), self.dataset_name)
+        df3 = getDF(reconstructed_graph, self.sess.run(self.loss), weight_list)
+        df = df.append(df3)
+        df.to_csv(os.path.join("reconstruction", self.dataset_name, 'Hierarchy', '') + 'output_data.csv', sep = '\t', encoding = 'utf-8')
+
         return weight_list, reconstructed_Adj.eval()
 
-
+def getDF(graph, loss, weight_list):
+    avg_dc = sum(nx.degree_centrality(graph))/len(graph.edges())
+    avg_cc = sum(nx.closeness_centrality(graph))/len(graph.edges())
+    if not nx.is_connected(graph):
+        da = nx.diameter(max(nx.connected_component_subgraphs(graph), key=len))
+    else:
+        da = nx.diameter(graph)
+    df = pd.DataFrame.from_items([('Clustering', [nx.average_clustering(graph)]),('Diameter', [da]), ('Degree centrality',[avg_dc]), ('Closeness centrality', [avg_cc]), ('Loss', [loss]), ('Weight list', [weight_list])])
+    return df
