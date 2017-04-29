@@ -58,24 +58,25 @@ def construct_topology(graph_name, each_part, Node2Part):
 
     for part in each_part.keys():
         if part in Node2Part.keys():
-        # 对每一块~
+            # 对每一块~
             adj         = each_part[part]
             adjID_node  = Node2Part[part]
 
-        # 构建 网络的一部分
-        for src_adjIdx in range(len(list(adj))):
-            if src_adjIdx in adjID_node.keys():
-                src = adjID_node[src_adjIdx]
-                weighted_graph.add_node(src)
+            # 构建 网络的一部分
+            for src_adjIdx in range(len(list(adj))):
+                if src_adjIdx in adjID_node.keys():
+                    src = adjID_node[src_adjIdx]
+                    weighted_graph.add_node(src)
 
-                for dst_Idx in range(len(adj[src_adjIdx])):
-                    if adj[src_adjIdx][dst_Idx] > 0 and dst_Idx in adjID_node.keys():
-                        dst = adjID_node[dst_Idx]
+                    for dst_Idx in range(len(adj[src_adjIdx])):
+                        if adj[src_adjIdx][dst_Idx] > 0 and dst_Idx in adjID_node.keys():
+                            dst = adjID_node[dst_Idx]
 
-                        # 去除自环
-                        if dst != src:
-                            weighted_graph.add_node(dst)
-                            weighted_graph.add_edge(src,dst,weight=adj[src_adjIdx][dst_Idx])
+                            # 去除自环
+                            if dst != src:
+                                weighted_graph.add_node(dst)
+                                weighted_graph.add_edge(src,dst,weight=adj[src_adjIdx][dst_Idx])
+>>>>>>> master
 
     return weighted_graph
 
