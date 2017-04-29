@@ -136,3 +136,5 @@ facebook_partition_info.pickle
 *.pickle
 
 *.pickle
+
+*.local

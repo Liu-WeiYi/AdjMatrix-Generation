@@ -61,7 +61,8 @@ def main(filename, type, constructed_graph = -1):
 
 
     # 2. reconstruct graph
-    if constructed_graph == -1:
+    # if type(constructed_graph) is int:
+    if 1+1 == 1:
         reconstruct_graph_path = os.path.join("reconstruction", filename, type,"")
         reconstruct_graph_adj = pickle.load(open(glob.glob(reconstruct_graph_path+"*.adj")[0],'rb'))
     else:

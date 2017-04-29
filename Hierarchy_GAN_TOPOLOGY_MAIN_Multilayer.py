@@ -66,10 +66,11 @@ def main(args):
                 print('weight list: ', weight_list)
                 print('reconstructed_adj shape: ', reconstructed_Adj.shape)
 
-            # save Model
-            pickle.dump(reconstructed_Adj, open(trained_path+"WS1_WS2_reconstructed_%s.adj",'wb'))
-
             C.main(filename=args.Datasets[0],type="Hierarchy",constructed_graph=reconstructed_Adj)
+
+            # save Model
+            pickle.dump(reconstructed_Adj, open("WS1_WS2_reconstructed_%s.adj",'wb'))
+
 
 
 

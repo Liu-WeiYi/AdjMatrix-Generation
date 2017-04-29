@@ -98,16 +98,16 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         trained_graph_adj_list+= origin_adj_list
 
         ## step.1 init Weight~
-        trained_graph_weight_list = []
-        self.layer_weight_list = [] # for Hierarchy GAN~ ??
-        count = 0
-        for adj in trained_graph_adj_list:
-            """ 对于每一个adj, 给出 weight """
-            layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
-            self.layer_weight_list.append(layer_weight)
-            trained_graph_weight_list.append(layer_weight)
+        # trained_graph_weight_list = []
+        # self.layer_weight_list = [] # for Hierarchy GAN~ ??
+        # count = 0
+        # for adj in trained_graph_adj_list:
+        #     """ 对于每一个adj, 给出 weight """
+        #     layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
+        #     self.layer_weight_list.append(layer_weight)
+        #     trained_graph_weight_list.append(layer_weight)
 
-            count += 1
+        #     count += 1
 
         ## step.2 init bias
         self.bias = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="bias")
@@ -118,22 +118,86 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         # ===================================================
 
         # step.1 map g1 -> g_desired_size
+        print('trained graph length: ',len(trained_graph_adj_list))
+
+        """ add 04.27 先按照graph size分好 """
+        self.layer_weight_list = [] # for Hierarchy GAN~
+        # size_adj = {}
+        # for adj in trained_graph_adj_list:
+        #     shape = adj.shape[0]
+        #     if shape not in size_adj:
+        #         size_adj[shape]=[adj]
+        #     else:
+        #         size_adj[shape].append(adj)
+        # if debugFlag is True:
+        #     print('size_adj length: ')
+        #     for size in size_adj.keys():
+        #         print('\tcurrent size: ', size, end='  ')
+        #         print('total number: ', len(size_adj[size]))
+        # """ 每一个形状的adj先进行相加, 之后做一次reshape, 最后再将做好reshape的矩阵加在一起 """
         tmp = []
-        for idx in range(len(trained_graph_weight_list)):
-            # 给定每一个weight
-            adj_weight = trained_graph_weight_list[idx]
-            adj = trained_graph_adj_list[idx]
-            current_adj = adj_weight*adj
-            # # 投影到 desired_size 上
-            # linear_current_adj = tf.reshape(current_adj,[-1]) # flatten matrix~
-            # linear_current_adj = tf.expand_dims(linear_current_adj,axis=-1)
-            # linear_length = linear_current_adj.shape.as_list()[0]
-            # """Y=AX"""
-            # TransformM = tf.truncated_normal(shape=[self.desired_size**2, linear_length],mean=0.0,stddev=1.0)
-            # reshape_linear_current_adj = tf.matmul(TransformM,linear_current_adj)
-            # reshape_adj = tf.reshape(reshape_linear_current_adj, shape=[self.desired_size, self.desired_size])
-            reshape_adj = self.__reshapeAdj(current_adj,self.desired_size)
-            tmp.append(reshape_adj)
+        # for size in size_adj.keys():
+        #     current_tmp = []
+        #     count = 0
+        #     for adj in size_adj[size]:
+        #         # 1. create weight
+        #         current_layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="size_%d_weight_%d"%(size,count))
+        #         self.layer_weight_list.append(current_layer_weight)
+        #         # 2. w1*g1
+        #         weighted_layer = current_layer_weight*adj
+        #         # add to list
+        #         current_tmp.append(weighted_layer)
+        #         # update count
+        #         count += 1
+        #     # 3. 把当前shape下的所有矩阵求和
+        #     current_sum_layers = tf.add_n(current_tmp,name=str(size))
+        #     # 4. reshape 到固定大小
+        #     print('reshape...')
+        #     current_reshape = self.__reshapeAdj(current_sum_layers, self.desired_size)
+
+        #     # add to list
+        #     tmp.append(current_reshape)
+
+        """ 先reshape之后~~ 再进行weight """
+        trained_graph_adj_list_reshape = []
+        # 1. reshape...
+        for adj in trained_graph_adj_list:
+            current_reshape = self.__reshapeAdj(adj, self.desired_size)
+            trained_graph_adj_list_reshape.append(current_reshape)
+        # 2. W*G
+        count = 0
+        for adj in trained_graph_adj_list_reshape:
+            # 1. create weight
+            current_layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
+            self.layer_weight_list.append(current_layer_weight)
+            # 2. w1*g1
+            weighted_layer = current_layer_weight*adj
+            # 3. append to tmp
+            tmp.append(weighted_layer)
+            count += 1
+
+        if debugFlag is True:
+            print('tmp total length: ', len(tmp))
+
+
+        """ end add """
+
+        # for idx in range(len(trained_graph_weight_list)):
+        #     print('current adj idx: ',idx)
+        #     # 给定每一个weight
+        #     adj_weight = trained_graph_weight_list[idx]
+        #     adj = trained_graph_adj_list[idx]
+        #     current_adj = adj_weight*adj
+        #     # # 投影到 desired_size 上
+        #     # linear_current_adj = tf.reshape(current_adj,[-1]) # flatten matrix~
+        #     # linear_current_adj = tf.expand_dims(linear_current_adj,axis=-1)
+        #     # linear_length = linear_current_adj.shape.as_list()[0]
+        #     # """Y=AX"""
+        #     # TransformM = tf.truncated_normal(shape=[self.desired_size**2, linear_length],mean=0.0,stddev=1.0)
+        #     # reshape_linear_current_adj = tf.matmul(TransformM,linear_current_adj)
+        #     # reshape_adj = tf.reshape(reshape_linear_current_adj, shape=[self.desired_size, self.desired_size])
+        #     reshape_adj = self.__reshapeAdj(current_adj,self.desired_size)
+        #     tmp.append(reshape_adj)
 
         ## step.2 w1*g1+w2*g2+... +wn*gn + w*g_real + bias~~
         ## 重构具有期望graph_size 的 graph
@@ -151,6 +215,7 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         ## step.1 投影 g_real -> g_real_desired_size
         """注意, 这里的每一个真实网络应该对应一个 degree distribution, 而不应该像重构网络那样，所有的对应一个degree distribution"""
         origin_adjs_degree = []
+        print('origin adj length: ',len(origin_adj_list))
         for adj in origin_adj_list:
             # 1. reshape original adj
             adj = tf.to_float(adj)
@@ -176,15 +241,16 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
 
         ## step.1 loss func
         """方法1: 采用 L1 Norm"""
-        #self.loss = tf.reduce_mean(tf.abs(self.all_layer_degree - self.logits))
-        """方法2: 采用 degree distribution 之间的 KL 距离"""
-        self.logits_degree = self.logits_degree + 0.000001 # 保证分母不为 0
-        y = self.all_layer_degree/self.logits_degree
-        self.loss = tf.abs(tf.reduce_mean(-tf.nn.softmax_cross_entropy_with_logits(logits=self.logits_degree, labels=y)))
+        self.loss = tf.reduce_mean(tf.abs(self.all_layer_degree - self.logits))
+        # # """方法2: 采用 degree distribution 之间的 KL 距离"""
+        # print('create KL...')
+        # self.logits_degree = self.logits_degree + 0.000001 # 保证分母不为 0
+        # y = self.all_layer_degree/self.logits_degree
+        # self.loss = tf.abs(tf.reduce_mean(-tf.nn.softmax_cross_entropy_with_logits(logits=self.logits_degree, labels=y)))
 
         ## step.2 learning rate
         """learning rate decay... from TF_API"""
-        start_learning_rate = 0.1
+        start_learning_rate = 0.001
         global_step = tf.Variable(0, trainable=False)
         decay_step = 1000
         decay_rate = 0.96
@@ -202,6 +268,7 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         @input training_step 需要训练的次数
         @return weight & reconstructed adj
         """
+        print('run TF...')
         tf.global_variables_initializer().run()
 
         for step in range(training_step):
@@ -211,7 +278,8 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
                 tmp = 'W_%d: [%.4f] | '%(idx, self.sess.run(self.layer_weight_list[idx]))
                 info += tmp
             info += " bias: [%.4f]"%self.sess.run(self.bias)
-            print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
+            # print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)), info)
+            print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
 
             if self.sess.run(self.loss) <= 0.01:
                 break
@@ -231,6 +299,7 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         @input: oriAdj --- 原始矩阵 / desired_size --- 期望矩阵大小
         @output: reshapeAdj
         """
+        oriAdj = tf.to_float(oriAdj)
         if debugFlag is True:
             print('*** running reshape...')
             start = time.time()
@@ -240,15 +309,17 @@ class Multilayer_Hiearchy_adjMatrix_Generator(object):
         linear_length = linear_current_adj.shape.as_list()[0]
 
         # step.1 获取原始矩阵的size
-        origin_size = oriAdj.shape.as_list()[0]
+        origin_size = oriAdj.shape[0]
         # step.2 按片映射矩阵
         """Y=AX"""
         linear_reshapeAdj = tf.constant([],dtype=tf.float32)
         for slice in range(self.desired_size**2):
-            slice_TransformM = tf.truncated_normal(shape=[linear_length],mean=0.0,stddev=1.0)
+            # slice_TransformM = tf.truncated_normal(shape=[linear_length],mean=0.0,stddev=1.0)
+            slice_TransformM = np.random.normal(0.0,1.0,size=linear_length)
             # adj_current_column = oriAdj[:,slice]
             # value = tf.reduce_sum(slice_TransformM * adj_current_column)
             value = tf.reduce_sum(slice_TransformM * linear_current_adj, keep_dims=True)
+            value = tf.to_float(value)
             linear_reshapeAdj = tf.concat([linear_reshapeAdj, value],axis=0)
 
         reshape_adj = tf.reshape(linear_reshapeAdj, shape=[self.desired_size, self.desired_size])
