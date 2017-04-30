@@ -53,10 +53,10 @@ def draw_degree(reG,oriG,path,figure_name, num):
     plt.savefig(path+"combined_"+figure_name+".png")
     plt.savefig(path+"combined_"+figure_name+".pdf")
 
-    re_df = pd.DataFrame({"x":[i for i in x_reG], 'y': y_reG})
-    re_df.to_csv(path+"reconstruct_dataset"+figure_name+"%d.csv"%num, sep = '\t', encoding = 'utf-8')
-    ori_df = pd.DataFrame({"x":[i for i in x_oriG], 'y': y_oriG})
-    ori_df.to_csv(path+"reconstruct_dataset"+figure_name+"%d.csv"%num, sep = '\t', encoding = 'utf-8')
+    re_df = pd.DataFrame({'reconstruction': y_reG})
+    ori_df = pd.DataFrame({'origin': y_oriG})
+    out_df = pd.concat([re_df, ori_df], ignore_index=True, axis=1)
+    out_df.to_csv(path+"reconstruct_dataset"+figure_name+"%d.csv"%num, sep = '\t', encoding = 'utf-8')
 
     plt.clf()
 
