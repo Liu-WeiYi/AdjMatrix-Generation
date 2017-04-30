@@ -8,6 +8,7 @@
 import pickle
 import networkx as nx
 import matplotlib.pyplot as plt
+import pandas as pd
 import os
 import glob
 import sys
@@ -23,7 +24,7 @@ def draw_degree(G):
 
     plt.loglog(x,y,color='blue',linewidth=2)
 '''
-def draw_degree(reG,oriG,path,figure_name):
+def draw_degree(reG,oriG,path,figure_name, num):
     if not os.path.exists(path):
         print("some error happend?")
         os.makedirs(path)
@@ -51,6 +52,11 @@ def draw_degree(reG,oriG,path,figure_name):
 
     plt.savefig(path+"combined_"+figure_name+".png")
     plt.savefig(path+"combined_"+figure_name+".pdf")
+
+    re_df = pd.DataFrame({"x":[i for i in x_reG], 'y': y_reG})
+    re_df.to_csv(path+"reconstruct_dataset"+figure_name+"%d.csv"%num, sep = '\t', encoding = 'utf-8')
+    ori_df = pd.DataFrame({"x":[i for i in x_oriG], 'y': y_oriG})
+    ori_df.to_csv(path+"reconstruct_dataset"+figure_name+"%d.csv"%num, sep = '\t', encoding = 'utf-8')
 
     plt.clf()
 
@@ -101,7 +107,7 @@ def main(filename, type, constructed_graph = -1):
     reconstruct_graph = adj2Graph(reconstruct_graph_adj, edgesNumber = len(original_graph.edges()))
     print('edge number: ', len(reconstruct_graph.edges()))
     #plt.figure("reconstruct graph degree distribution")
-    draw_degree(reconstruct_graph, original_graph, os.path.join("reconstruction", filename, type, ""), filename)
+    draw_degree(reconstruct_graph, original_graph, os.path.join("reconstruction", filename, type, ""), filename, 0)
 
     print("Clustering: ",nx.average_clustering(original_graph), ' ', nx.average_clustering(reconstruct_graph))
     # print("Diameter: ", nx.average_shortest_path_length(original_graph), ' ', nx.average_shortest_path_length(reconstruct_graph))
