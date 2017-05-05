@@ -225,6 +225,53 @@ def graph2Adj(g, max_size = 1):
 
         return adjIdx_2_node, padded_adj
 
+def graph2Adj_with_only_interactions(g,name):
+    node_2_outsideNeighbor = {}
+    path =os.path.join("data",name,"")
+    outNeighborFiles = glob.glob(path+"*.outNeighbor")
+
+    inter_edge_num = 0
+    for file in outNeighborFiles:
+        tmpDict = pickle.load(open(file,'rb'))
+        for count in tmpDict.keys():
+            current_dict = tmpDict[count]
+            for node in current_dict.keys():
+                node_list = current_dict[node]
+                if node_list != []:
+                    if node not in node_2_outsideNeighbor.keys():
+                        node_2_outsideNeighbor[node]= node_list
+                        node_2_outsideNeighbor[node] = list(set(node_list))
+                    else:
+                        node_2_outsideNeighbor[node] = node_2_outsideNeighbor[node]+node_list
+                        node_2_outsideNeighbor[node] = list(set(node_2_outsideNeighbor[node]))
+
+    # 当max_size == -1时，只返回 adj，而不进行padding
+    src_dict = {}
+    adjIdx_2_node = {}
+    adjIdx = 0
+    # create adj file
+    for src in g.nodes():
+        src_dict[src] = []
+        adjIdx_2_node[adjIdx] = src
+        adjIdx += 1
+        for dst in g.nodes():
+            if src == dst:
+                src_dict[src].append(0)
+            else:
+                try:
+                    flag = dst in node_2_outsideNeighbor[src] or src in node_2_outsideNeighbor[dst]
+                except:
+                    flag = True
+                if dst in g.neighbors(src) and flag:
+                    src_dict[src].append(1)
+                    inter_edge_num += 1
+                else:
+                    src_dict[src].append(0)
+    adj = np.array([np.array(src_dict[src]) for src in src_dict.keys()])
+
+    print('\t*** origin graph edge: %d; inter graph edge: %d'%(len(g.edges()),inter_edge_num))
+
+    return adj
 
 
 

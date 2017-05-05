@@ -1,7 +1,5 @@
 ####################################
-# Sailung Yeung <yeungsl@bu.edu>
 # parse the graph into desired form
-#
 ####################################
 import networkx as nx
 import sys, glob

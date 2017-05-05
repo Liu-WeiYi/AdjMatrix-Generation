@@ -77,7 +77,7 @@ if __name__ == "__main__":
         # os.system('python3 Conditional_Topology_MAIN.py %s %d 1'%(filename, npart))
         # 不需要 .metis_graph 和 .outdegree 文件 故删除以节省空间~
         os.system('rm %s*.metis_graph'%path)
-        os.system('rm %s*.outNeighbor'%path)
+        # os.system('rm %s*.outNeighbor'%path)
 
     pickle.dump(partition_info, open('%s_partition_info.pickle'%filename,'wb'))
     if debugFlag is True:

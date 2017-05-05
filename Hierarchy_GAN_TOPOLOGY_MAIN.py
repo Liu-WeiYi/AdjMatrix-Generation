@@ -53,6 +53,8 @@ def parse_args():
     # adj-mat constuction possibility
     parser.add_argument("--link_possibility",       type=float, default=0.5,              help="if a value in sampled adj-mat is greater than link-possibility-threshold, then there is an edge between two nodes on positions [0.5]")
 
+    parser.add_argument('--cutValue',               type=float, default=0)
+
     return parser.parse_args()
 
 # ------------------------------
@@ -89,10 +91,12 @@ def main(args):
                 sampleDIR=args.samples_dir,
                 reconstructDIR=args.reconstruction_dir,
                 link_possibility=args.link_possibility,
-                trainedFlag=trainedFlag
+                trainedFlag=trainedFlag,
+                cutValue = args.cutValue
             )
 
             # 2. using weight for each layer, and construct Hierarchy Model
+            print('begin to construct model...')
             adjMatGen.modelConstruction()
 
             # 3. train Hierarchy Model to get weight and constructed adj

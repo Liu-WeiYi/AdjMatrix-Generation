@@ -17,10 +17,10 @@ import math
 
 from utils import *
 import Conditional_model as C_model
-from Conditional_Topology_MAIN import graph2Adj, generate_graph
+from Conditional_Topology_MAIN import graph2Adj, generate_graph, graph2Adj_with_only_interactions
 from Compair import adj2Graph, draw_degree
 
-debugFlag = True
+debugFlag = False
 
 class Hierarchy_adjMatrix_Generator(object):
     """
@@ -36,7 +36,8 @@ class Hierarchy_adjMatrix_Generator(object):
                 OutDegree_Length=1,
                 inputPartitionDIR="facebook", checkpointDIR="condition_checkpoint", sampleDIR="condition_samples",reconstructDIR="reconstruction",
                 link_possibility=0.5,
-                trainedFlag=False
+                trainedFlag=False,
+                cutValue=1
             ):
         """
         @purpose
@@ -89,6 +90,8 @@ class Hierarchy_adjMatrix_Generator(object):
         self.reconstructDIR      = reconstructDIR
         # 用作生成 拓扑结构 的方式
         self.link_possibility    = link_possibility
+
+        self.cutValue = cutValue
 
         # 构建 GAN~
         if trainedFlag is False:
@@ -157,6 +160,7 @@ class Hierarchy_adjMatrix_Generator(object):
             if debugFlag is True:
                 print('original graph size: ',len(origin_graph.nodes()))
             origin_adj = graph2Adj(origin_graph,max_size=-1)
+            # origin_adj = graph2Adj_with_only_interactions(origin_graph,self.dataset_name)
             if debugFlag is True:
                 print('original adj shape: ', origin_adj.shape)
 
@@ -177,12 +181,12 @@ class Hierarchy_adjMatrix_Generator(object):
         # ==============================================
         # 2. Permute Adj to generate more adjs
         # ==============================================
-        permute_number = 5
-        if debugFlag is True:
-            print("permuting adjs... ")
-        trained_graph_adj_list = permute_adjs(trained_graph_adj_list,permute_number)
-        if debugFlag is True:
-            print('permuted adjs number: ', len(trained_graph_adj_list))
+        # permute_number = 5
+        # if debugFlag is True:
+        #     print("permuting adjs... ")
+        # trained_graph_adj_list = permute_adjs(trained_graph_adj_list,permute_number)
+        # if debugFlag is True:
+        #     print('permuted adjs number: ', len(trained_graph_adj_list))
         """ end add """
 
         # step.1 创建Weight~
@@ -191,7 +195,15 @@ class Hierarchy_adjMatrix_Generator(object):
         count = 0
         for adj in trained_graph_adj_list:
             """每一个邻接矩阵 生成不一样的权重"""
+            # if idx != len(trained_graph_adj_list)-1:
+            #     layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
+            # else:
+            #     layer_weight = tf.constant(0.1,name="weight_%d"%count)
+
+            """每一个邻接矩阵 生成不一样的权重"""
             layer_weight = tf.Variable(tf.random_uniform([1],minval=0,maxval=1),name="weight_%d"%count)
+
+
             self.layer_weight_list.append(layer_weight)
             adj_layer_weight = layer_weight*tf.ones(shape=adj.shape) # 扩展到每一个维度上~
             self.trained_graph_weight_list.append(adj_layer_weight)
@@ -234,7 +246,7 @@ class Hierarchy_adjMatrix_Generator(object):
         # self.opt = tf.train.GradientDescentOptimizer(learning_rate).minimize(self.loss)
         self.opt = tf.train.AdamOptimizer(learning_rate).minimize(self.loss)
 
-    def train(self, training_step=10000):
+    def train(self, training_step=10000, cutvalue=0):
         """
         @input training_step 训练所需步骤
         @return weight 列表， reconstructed adj
@@ -260,16 +272,16 @@ class Hierarchy_adjMatrix_Generator(object):
             counter+=1
             if counter % 100 == 0:
                 print('step: [%d]/[%d], loss value: %.4f'%(step+1, training_step, self.sess.run(self.loss)))
-                weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
-                tmp_re_adj_raw = self.sess.run(self.logits)
-                maxValue = tf.reduce_max(tmp_re_adj_raw)
-                tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
-                tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
-                reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
-                reconstructed_graph = adj2Graph(reconstructed_Adj.eval(), edgesNumber = len(original_graph.edges()))
-                draw_degree(reconstructed_graph, original_graph, os.path.join("reconstruction", self.dataset_name, 'Hierarchy', ''), self.dataset_name, counter)
-                df2 = getDF(reconstructed_graph, self.sess.run(self.loss), weight_list)
-                df = df.append(df2)
+                # weight_list = [self.sess.run(self.layer_weight_list[idx]) for idx in range(len(self.layer_weight_list))]
+                # tmp_re_adj_raw = self.sess.run(self.logits)
+                # maxValue = tf.reduce_max(tmp_re_adj_raw)
+                # tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
+                # tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
+                # reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
+                # reconstructed_graph = adj2Graph(reconstructed_Adj.eval(), edgesNumber = len(original_graph.edges()),cutvalue=self.cutValue)
+                # draw_degree(reconstructed_graph, original_graph, os.path.join("reconstruction", self.dataset_name, 'Hierarchy', ''), self.dataset_name, counter)
+                # df2 = getDF(reconstructed_graph, self.sess.run(self.loss), weight_list)
+                # df = df.append(df2)
                 #print("df2", df2)
                 #print("df", df)
 
@@ -286,11 +298,11 @@ class Hierarchy_adjMatrix_Generator(object):
         tmp_re_adj_raw_norm = tmp_re_adj_raw/maxValue
         tmp_re_adj_raw = tmp_re_adj_raw_norm - 0.5*tf.ones(shape = tmp_re_adj_raw.shape)
         reconstructed_Adj = tf.sigmoid(tmp_re_adj_raw)
-        reconstructed_graph = adj2Graph(reconstructed_Adj.eval(), edgesNumber = len(original_graph.edges()))
-        draw_degree(reconstructed_graph, original_graph, os.path.join("reconstruction", self.dataset_name, 'Hierarchy', ''), self.dataset_name, counter)
-        df3 = getDF(reconstructed_graph, self.sess.run(self.loss), weight_list)
-        df = df.append(df3)
-        df.to_csv(os.path.join("reconstruction", self.dataset_name, 'Hierarchy', '') + 'output_data.csv', sep = '\t', encoding = 'utf-8')
+        reconstructed_graph = adj2Graph(self.dataset_name, reconstructed_Adj.eval(), edgesNumber = len(original_graph.edges()), cutvalue=self.cutValue)
+        draw_degree(self.cutValue, reconstructed_graph, original_graph, os.path.join("reconstruction", self.dataset_name, 'Hierarchy', ''), self.dataset_name, counter)
+        # df3 = getDF(reconstructed_graph, self.sess.run(self.loss), weight_list)
+        # df = df.append(df3)
+        # df.to_csv(os.path.join("reconstruction", self.dataset_name, 'Hierarchy', '') + 'output_data.csv', sep = '\t', encoding = 'utf-8')
 
         return weight_list, reconstructed_Adj.eval()
 
