@@ -15,6 +15,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score
 import math
 import random
 import networkx as nx
+from Conditional_Topology_MAIN import graph2Adj
 
 
 def Louvain(G):
@@ -92,15 +93,27 @@ def randomDelete(oriG, net_name):
         delete_sample = ["0.416910183","0.262072158","0.144007561"]
 
     total_edges = len(oriG.edges())
+    count = 0
     for per in delete_sample:
         newG = nx.Graph()
         newG.add_nodes_from(oriG.nodes())
 
-        remain_edges = math.floor(float(per)*total_edges)
+        remain_edges = total_edges - math.floor(float(per)*total_edges)
         edges = random.sample(oriG.edges(),remain_edges)
         newG.add_edges_from(edges)
 
+        if net_name == 'BA':
+            cut_value_list = ['0.6224','0.6136','0.6117','0.6106','0.6063','0.6028']
+            adj = graph2Adj(newG,-1)
+            pickle.dump(adj,open("%s_adjs-RE-random-%s.pickle"%(net_name,cut_value_list[count]),'wb'))
+        if net_name == 'facebook':
+            cut_value_list = ["0.622459","0.616346","0.572501","0.567079","0.566142","0.560701"]
+            adj = graph2Adj(newG,-1)
+            pickle.dump(adj,open("%s_adjs-RE-random-%s.pickle"%(net_name,cut_value_list[count]),'wb'))
+
         reG_list.append(newG)
+        count += 1
+
     return reG_list
 
 
@@ -125,7 +138,9 @@ if __name__ == "__main__":
     # sampling Value used for Other methods!!
     """other methods in here"""
     # for example: Randomly deleting edges
-    reG_list = randomDelete(oriG, net_name)
+    # [trained_graph_adj_list,origin_adj] = pickle.load(open('%s_adjs.pickle'%net_name,'rb'))
+    # oriG = adj2Graph(net_name,origin_adj,1000,0.5)
+    # reG_list = randomDelete(oriG, net_name)
 
     """Find Communities and calculate NMI"""
     # find com for original graph

@@ -286,7 +286,8 @@ class Condition_adjMatrix_Generator(object):
                 ## 6. 输出
                 ### 1. 每次都输出 Loss Value
                 counter += 1
-                print("Epoch: [%d] | [%d/%d] time: %4.4f, d_loss: %.8f, g_loss: %.8f"%(epoch, idx, step, time.time()-start_time, errD_fake+errD_real, errG))
+                if counter % 100 == 0:
+                    print("Epoch: [%d] | [%d/%d] time: %4.4f, d_loss: %.8f, g_loss: %.8f"%(epoch, idx+1, step, time.time()-start_time, errD_fake+errD_real, errG))
                 ### 2. 每500次生成一张图片。。。并保存~
                 if counter % 500 == 0:
                     ## 用作Generator输入 ---  随机生成一个具有Self.InitSampleLenght长度的向量，利用GAN生成一个 Adj-Mat

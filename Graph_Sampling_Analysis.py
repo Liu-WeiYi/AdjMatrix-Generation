@@ -36,16 +36,20 @@ oriG = adj2Graph(net_name,origin_adj,1000,0.5)
 # cut_value_list = ["0.622459","0.597827","0.581947","0.571054","0.559493","0.556555","0.535661","0.519301","0.493415"]
 
 # Facebook
-# cut_value_list = ["0.622459","0.616346","0.572501","0.567079","0.566142","0.560701"]
+cut_value_list = ["0.622459","0.616346","0.572501","0.567079","0.566142","0.560701"]
 
 # Wiki-Vote
-cut_value_list = ["0.622459","0.618375","0.609502"]
+# cut_value_list = ["0.622459","0.618375","0.609502"]
 
 
 # 提取相应的re_adj
-adj_path = os.path.join("adjs",net_name,"")
+# adj_path = os.path.join("adjs",net_name,"")
+# all_file_path = glob.glob(adj_path+"%s_adjs-RE-*.pickle"%(net_name))
+
+adj_path = os.path.join("adjs_random",net_name,"")
+all_file_path = glob.glob("%s_adjs-RE-random-*.pickle"%(net_name))
+
 graph_list = [oriG]
-all_file_path = glob.glob(adj_path+"%s_adjs-RE-*.pickle"%(net_name))
 for cut in cut_value_list:
     for file in all_file_path:
         if cut in file:
