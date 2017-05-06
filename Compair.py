@@ -148,13 +148,17 @@ def adj2Graph(net_name, adj, edgesNumber=1000, cutvalue=1):
 
     print("cut value: ", cutvalue)
 
+    print(adj.shape)
     for src in range(len(list(adj))):
+        if src % 500 == 0:
+            print('processed %d nodes'%src)
         graph.add_node(src)
-        for dst in range(len(adj[src])):
+        for dst in range(src, len(adj[src])):
             if src != dst:
                 if adj[src][dst] >= cutvalue:
                     # graph.add_edge(src,dst,weight=adj[src][dst])
-                    graph.add_edge(src,dst)
+                    if (dst,src) not in graph.edges():
+                        graph.add_edge(src,dst)
 
     return graph
 

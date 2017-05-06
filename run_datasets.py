@@ -25,6 +25,7 @@ if __name__ == "__main__":
     """Now We Have: ["BA","kron","WS","ER","wiki-vote","facebook"]"""
     # dirc = sys.argv[1] # WS has DONE!
     for dirc in ["BA","kron","WS","ER","facebook","wiki-vote"]:
+    # for dirc in ["wiki-vote"]:
         print("#############################################")
         print("\ntesting......................", dirc)
         print("\n#############################################")

@@ -307,8 +307,8 @@ class Hierarchy_adjMatrix_Generator(object):
         return weight_list, reconstructed_Adj.eval()
 
 def getDF(graph, loss, weight_list):
-    avg_dc = sum(nx.degree_centrality(graph))/len(graph.edges())
-    avg_cc = sum(nx.closeness_centrality(graph))/len(graph.edges())
+    avg_dc = sum(nx.degree_centrality(graph))/(len(graph.nodes())*2)
+    avg_cc = 2*sum(nx.closeness_centrality(graph))/len(graph.nodes())
     if not nx.is_connected(graph):
         da = nx.diameter(max(nx.connected_component_subgraphs(graph), key=len))
     else:
