@@ -50,7 +50,7 @@ def ourMethod(net_name):
     elif net_name == "WS":
         cut_value_list = ["0.608868","0.605854","0.599059","0.596019","0.595348","0.591385"]
     elif net_name == "ER":
-        cut_value_list = ["0.622459","0.60469","0.511051","0.502593","0.500775"]
+        cut_value_list = ["0.622459","0.60469","0.502593"]
     elif net_name == "kron":
         cut_value_list = ["0.622459","0.597827","0.581947","0.571054","0.559493","0.556555","0.535661","0.519301","0.493415"]
     elif net_name == "facebook":
@@ -127,11 +127,7 @@ def clean(coms, isolated_nodes):
         new_coms.append(clean_com)
     return new_coms
 
-if __name__ == "__main__":
-    """Now We Have: ["BA","kron","WS","ER","wiki-vote","facebook"]"""
-    # for dirc in ["BA","kron","WS","ER","facebook","wiki-vote"]:
-    net_name = sys.argv[1]
-
+def main(net_name):
     """Now we prepare the original graph and sampled graphs (stored in a list)"""
     # Our Method
     oriG, reG_list = ourMethod(net_name)
@@ -142,21 +138,56 @@ if __name__ == "__main__":
     # oriG = adj2Graph(net_name,origin_adj,1000,0.5)
     # reG_list = randomDelete(oriG, net_name)
 
-    """Find Communities and calculate NMI"""
-    # find com for original graph
-    oriG_com = Louvain(oriG)
-    for reG in reG_list:
-        reG_com = Louvain(reG)
-        reG_isolated_nodes = [com[0] for com in reG_com if len(com)==1]
-        reG_com = [com for com in reG_com if len(com)>2]
-        # delete isolated nodes~
-        oriG_com = clean(oriG_com,reG_isolated_nodes)
-        oriG_com = [com for com in oriG_com if len(com)>2]
+    """Metric 0 - Total Time """
+    #...
+    """Metric 1 - Number of non-isolated nodes"""
+    print('Metric 1 - Number of non-isolated nodes')
+    for g in reG_list:
+        iso_nodes = nx.isolates(g)
+        print(len(iso_nodes))
+    """Metric 2 - Cluster Coefficient"""
+    print('Metric 2 - Cluster Coefficient')
+    for g in reG_list:
+        cc = nx.average_clustering(g)
+        print(cc)
+    """Metric 3 - Normalized Largest Connected Component Size"""
+    print("Metric 3 - Normalized Largest Connected Component Size")
+    for g in reG_list:
+        component = max(nx.connected_components(g), key=len)
+        value = len(component)/len(g.nodes())
+        print(value)
+    """Metric 4 - Diameter"""
+    print('Metric 4 - Diameter')
+    for g in reG_list:
+        if not nx.is_connected(g):
+            da = nx.diameter(max(nx.connected_component_subgraphs(g), key=len))
+            da = str(da)+'_not_connected'
+        else:
+            da = nx.diameter(g)
+        print(da)
+    """Metric 5 - Degree Distribution"""
 
-        nmi = nmi_non_olp(oriG_com,reG_com)
-        print(nmi)
+
+    # """Find Communities and calculate NMI"""
+    # # find com for original graph
+    # oriG_com = Louvain(oriG)
+    # for reG in reG_list:
+    #     reG_com = Louvain(reG)
+    #     reG_isolated_nodes = [com[0] for com in reG_com if len(com)==1]
+    #     reG_com = [com for com in reG_com if len(com)>2]
+    #     # delete isolated nodes~
+    #     oriG_com = clean(oriG_com,reG_isolated_nodes)
+    #     oriG_com = [com for com in oriG_com if len(com)>2]
+
+    #     nmi = nmi_non_olp(oriG_com,reG_com)
+    #     print(nmi)
 
 
-
+if __name__ == "__main__":
+    """Now We Have: ["BA","kron","WS","ER","wiki-vote","facebook","roadNet"]"""
+    for dirc in ["BA","kron","WS","ER","facebook","wiki-vote"]:
+        print("Processing..................%s"%dirc)
+        main(dirc)
+        print('\n\n')
 
 
